@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nurse Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f7f9fc;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .notification {
+            border-left: 5px solid;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .low { border-color: #27ae60; }
+        .medium { border-color: #f39c12; }
+        .high { border-color: #e74c3c; }
+        .meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>🩺 Nurse Notification Dashboard</h1>
+
+    <!-- Static examples -->
+    <div class="notification low">
+        <strong>Patient:</strong> Alice Tan<br>
+        <strong>Location:</strong> Ward 3B<br>
+        <span class="meta">Priority: Low</span>
+    </div>
+
+    <div class="notification medium">
+        <strong>Patient:</strong> John Lim<br>
+        <strong>Location:</strong> ICU 2<br>
+        <span class="meta">Priority: Medium</span>
+    </div>
+
+    <div class="notification high">
+        <strong>Patient:</strong> Maria Gomez<br>
+        <strong>Location:</strong> Emergency Room<br>
+        <span class="meta">Priority: High</span>
+    </div>
+</body>
+</html>
