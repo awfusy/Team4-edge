@@ -1,15 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Streaming</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        /* Body Style */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-  <body>
-    <h1>Live streaming</h1>
-    <div>
+        /* Container for the video */
+        .stream-container {
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
 
-        <img src="{{ url_for('video') }}" width="50%"/>
+        /* Heading Style */
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Video Style */
+        .video {
+            width: 100%;
+            max-height: 450px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Footer (Optional) */
+        .footer {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stream-container">
+        <h1>Live Streaming</h1>
+        <div>
+            <img class="video" src="{{ url_for('video') }}" alt="Live Stream" />
+        </div>
+        <div class="footer">
+            <p>Enjoy the live stream! Stay tuned for more updates.</p>
+        </div>
     </div>
-            
-    </body>
 
-
+</body>
 </html>
