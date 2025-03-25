@@ -82,6 +82,7 @@ def tflite_predict(features):
 # --- Audio Processing Thread ---
 def audio_processing_thread():
     last_trigger_time = 0
+    fall_process = None
     while True:
         try:
             audio = audio_queue.get()
@@ -97,27 +98,36 @@ def audio_processing_thread():
 
             # TFLite Detection (Mel Spectrograms)
             features = extract_mel_spectrogram(audio_cleaned)
+            current_time = time.time()
+
+
+
             predictions = tflite_predict(features)
             tflite_detected = False
+            # Check if previous process has ended
+            if fall_process is not None and fall_process.poll() is not None:
+                # Process ended
+                print("Fall detection process has finished.")
+                fall_process = None  # Reset tracker
+
+            # --- TFLite Detection ---
             for i, score in enumerate(predictions[0]):
-                if i != 4 and score >= THRESHOLD:  # Assuming class 4 is noise
-                    current_time = time.time()
-                    if current_time - last_trigger_time > COOLDOWN_SECONDS:
+                if i != 4 and score >= THRESHOLD:
+                    if current_time - last_trigger_time > COOLDOWN_SECONDS and fall_process is None:
                         print(f"TFLite Detected! Class: {i} Confidence: {score:.2f}")
-                        subprocess.Popen(["python3", "falldetection.py"])
+                        fall_process = subprocess.Popen(["python3", "falldetection.py"])
                         last_trigger_time = current_time
-                        tflite_detected = True
+                    tflite_detected = True
                     break
 
-            # Vosk Fallback if TFLite doesn't detect
-            if not tflite_detected and recognizer.AcceptWaveform(audio_cleaned.tobytes()):
-                result = json.loads(recognizer.Result())
-                text = result.get("text", "").lower()
-                if text and any(keyword in text for keyword in KEYWORDS):
-                    current_time = time.time()
-                    if current_time - last_trigger_time > COOLDOWN_SECONDS:
+            # --- Vosk Fallback ---
+            if not tflite_detected and current_time - last_trigger_time > COOLDOWN_SECONDS and fall_process is None:
+                if recognizer.AcceptWaveform(audio_cleaned.tobytes()):
+                    result = json.loads(recognizer.Result())
+                    text = result.get("text", "").lower()
+                    if text and any(keyword in text for keyword in KEYWORDS):
                         print(f"Vosk Detected: {text}")
-                        subprocess.Popen(["python3", "falldetection.py"])
+                        fall_process = subprocess.Popen(["python3", "falldetection.py"])
                         last_trigger_time = current_time
 
             # Processing time
