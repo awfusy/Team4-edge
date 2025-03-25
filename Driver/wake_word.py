@@ -29,6 +29,13 @@ KEYWORDS = [
     "assist", "urgent", "sick", "fall", "bleeding", "call", "please"
 ]
 
+CLASS_LABELS = {
+    0: "General Help",
+    1: "Call for Medical Staff",
+    2: "Pain/Discomfort",
+    3: "Urgent Assistance",
+}
+
 # --- Load TFLite Model ---
 interpreter = tflite.Interpreter(model_path=TFLITE_MODEL_PATH)
 interpreter.allocate_tensors()
@@ -114,7 +121,8 @@ def audio_processing_thread():
             for i, score in enumerate(predictions[0]):
                 if i != 4 and score >= THRESHOLD:
                     if current_time - last_trigger_time > COOLDOWN_SECONDS and fall_process is None:
-                        print(f"TFLite Detected! Class: {i} Confidence: {score:.2f}")
+                        class_label = CLASS_LABELS.get(i, f"Class {i}")
+                        print(f"TFLite Detected! Class: {class_label} (Confidence: {score:.2f})")
                         fall_process = subprocess.Popen(["python3", "falldetection.py"])
                         last_trigger_time = current_time
                     tflite_detected = True
