@@ -63,7 +63,7 @@ def detect_upper_body(frame):
 
 # Function to generate frames for MJPEG streaming
 def generate_frames():
-    cap = cv2.VideoCapture(1)  # Default camera
+    cap = cv2.VideoCapture(0)  # Default camera
     if not cap.isOpened():
         print("Error: Unable to access the camera")
         return
@@ -140,6 +140,12 @@ def generate_frames():
             for line in label.split('\n'):
                 cv2.putText(frame, line, (50, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
                 y_offset += 20  # Move to the next line
+            
+            # Take these for MQTT, send it to the nurse dashboard via MQTT
+            mqttDataMP = state_mediapipe
+            mqttDataOCV = state_opencv        
+            print(mqttDataMP)
+            print(mqttDataOCV) 
                 
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
