@@ -2,9 +2,12 @@ import cv2
 import mediapipe as mp
 import math
 from flask import Flask, Response
+import time
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+mp_drawing = mp.solutions.drawing_utils
 
 # Keypoints definition for MediaPipe
 KEYPOINTS = {
@@ -31,6 +34,7 @@ def classify_patient_state(landmarks, frame_shape):
     def to_pixel_coords(lm):
         return int(lm.x * frame_shape[1]), int(lm.y * frame_shape[0])
 
+    # Extract keypoints
     nose = to_pixel_coords(landmarks[KEYPOINTS["nose"]])
     neck = to_pixel_coords(landmarks[KEYPOINTS["neck"]])
     left_hip = to_pixel_coords(landmarks[KEYPOINTS["left_hip"]])
@@ -50,31 +54,51 @@ def classify_patient_state(landmarks, frame_shape):
     else:
         return "Standing"
 
+# Function to detect upper body using OpenCV
+def detect_upper_body(frame):
+    haar_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_upperbody.xml")
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    bodies = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    return len(bodies) > 0
+
+# Function to generate frames for MJPEG streaming
 # Function to generate frames for MJPEG streaming
 def generate_frames():
-    # Initialize MediaPipe Pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
     mp_drawing = mp.solutions.drawing_utils
 
-    # Initialize video capture from camera
-    cap = cv2.VideoCapture(1)
-    
+    cap = cv2.VideoCapture(1)  # You can change to another camera ID if needed
     if not cap.isOpened():
         print("Error: Unable to access the camera")
         return
 
     cap.set(cv2.CAP_PROP_FPS, 30)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Original resolution
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Original resolution
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Keep original resolution
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Keep original resolution
+
+    # Process frames efficiently by skipping some of them
+    frame_skip = 2 # Skip every other frame for processing  
 
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Error: Failed to capture frame")
-            break
+        # Skip frames to optimize performance
+        for _ in range(frame_skip):
+            ret, frame = cap.read()
+            if not ret:
+                print("Error: Failed to capture frame")
+                break
 
         # Convert to RGB for MediaPipe
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Get frame dimensions for drawing the simulated bed
+        height, width = frame.shape[:2]
+        bed_x1, bed_y1 = width // 4, 0
+        bed_x2, bed_y2 = 3 * width // 4, height
+        bed_box = (bed_x1, bed_y1, bed_x2, bed_y2)
+
+        # Draw simulated bed (as a red rectangle)
+        cv2.rectangle(frame, (bed_x1, bed_y1), (bed_x2, bed_y2), (0, 0, 255), 2)
+        cv2.putText(frame, "Bed", (bed_x1, bed_y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
         # Process with MediaPipe Pose
         pose_results = pose.process(rgb_frame)
@@ -85,9 +109,25 @@ def generate_frames():
             # Get the patient state from MediaPipe
             state_mediapipe = classify_patient_state(pose_results.pose_landmarks.landmark, frame.shape)
 
-            # Add text to frame
-            cv2.putText(frame, f"State: {state_mediapipe}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+            # Check if the patient is inside the simulated bed based on hips
+            left_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].x * width
+            left_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].y * height
+            right_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].x * width
+            right_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].y * height
 
+            # If the hips are inside the simulated bed, prevent standing detection
+            if (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) or (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
+                if state_mediapipe == "Standing":
+                    state_mediapipe = "Laying Down"  # Change standing to laying down if inside bed
+
+            # If the person is "Laying Down" and outside the bed, change state to "Fallen out of bed"
+            if state_mediapipe == "Laying Down":
+                if not (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) and not (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
+                    state_mediapipe = "Fallen out of bed"
+
+            # Add the state information to the frame
+            cv2.putText(frame, f"State: {state_mediapipe}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+        
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
         if not ret:
@@ -98,7 +138,7 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-# Main program (Flask will call this to stream video)
+# Flask app to serve video stream
 app = Flask(__name__)
 
 @app.route('/video_feed')
