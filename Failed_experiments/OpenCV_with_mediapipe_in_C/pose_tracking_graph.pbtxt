@@ -1,0 +1,15 @@
+input_stream: "input_video"
+output_stream: "pose_landmarks"
+
+node {
+  calculator: "FlowLimiterCalculator"
+  input_stream: "input_video"
+  input_stream: "FINISHED:pose_landmarks"
+  output_stream: "throttled_input_video"
+}
+
+node {
+  calculator: "PoseLandmarkGpu"
+  input_stream: "IMAGE:throttled_input_video"
+  output_stream: "LANDMARKS:pose_landmarks"
+}
