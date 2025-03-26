@@ -62,12 +62,8 @@ def detect_upper_body(frame):
     return len(bodies) > 0
 
 # Function to generate frames for MJPEG streaming
-# Function to generate frames for MJPEG streaming
 def generate_frames():
-    pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    mp_drawing = mp.solutions.drawing_utils
-
-    cap = cv2.VideoCapture(1)  # You can change to another camera ID if needed
+    cap = cv2.VideoCapture(1)  # Default camera
     if not cap.isOpened():
         print("Error: Unable to access the camera")
         return
@@ -77,7 +73,7 @@ def generate_frames():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Keep original resolution
 
     # Process frames efficiently by skipping some of them
-    frame_skip = 2 # Skip every other frame for processing  
+    frame_skip = 2  # Skip every other frame for processing  
 
     while True:
         # Skip frames to optimize performance
@@ -125,9 +121,26 @@ def generate_frames():
                 if not (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) and not (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
                     state_mediapipe = "Fallen out of bed"
 
-            # Add the state information to the frame
-            cv2.putText(frame, f"State: {state_mediapipe}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-        
+            # Use OpenCV to detect the upper body
+            state_opencv = "Standing" if detect_upper_body(frame) else "Sitting"  # Basic assumption
+
+			# Combine both detections
+            if state_mediapipe == "Laying Down":
+                label = f"status:\nM: {state_mediapipe}\nOCV: N/A"
+                color = (0, 255, 0)  # Red for laying down (MediaPipe takes priority)
+            elif state_mediapipe == state_opencv:
+                label = f"status:\nM: {state_mediapipe}\nOCV: {state_opencv}"
+                color = (0, 255, 0)  # Green for both states matching
+            else:
+                label = f"status:\nM: {state_mediapipe}\nOCV: {state_opencv}"
+                color = (0, 0, 255)  # Red for mismatch
+
+            # Split the label into lines and add them one by one
+            y_offset = 50
+            for line in label.split('\n'):
+                cv2.putText(frame, line, (50, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+                y_offset += 20  # Move to the next line
+                
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
         if not ret:
