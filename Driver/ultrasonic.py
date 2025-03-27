@@ -14,7 +14,7 @@ client = mqtt.Client()
 client.connect(mqtt_broker, mqtt_port, 60)
 
 mqtt_topic_distance = "proximity/alert"
-mqtt_topic_flag = "sensor/camera"
+
 
 # Initialize 3 ultrasonic sensors
 ultrasonic1 = DistanceSensor(echo=17, trigger=4)
