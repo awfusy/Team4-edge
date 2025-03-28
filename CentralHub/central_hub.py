@@ -138,16 +138,22 @@ class SimplifiedCentralHub:
 
     def handle_audio_alert(self, payload):
         """Process Audio Alerts"""
+        # Store variables first
         phrase = payload.get('phrase', '')
+        alert_type = payload.get('alert_type')
+        confidence = payload.get('confidence')
+        timestamp = payload.get('timestamp', datetime.now().isoformat())
+        source = payload.get('source', 'audio')
+        
         print(f"Audio Alert: {phrase}")  # Simple console feedback
-        priority = 'HIGH' if payload.get('alert_type') in ['Urgent Assistance', 'Pain/Discomfort'] else 'MEDIUM'
+        priority = 'HIGH' if alert_type in ['Urgent Assistance', 'Pain/Discomfort'] else 'MEDIUM'
         
         alert_data = {
-            'timestamp': payload.get('timestamp', datetime.now().isoformat()),
-            'alert_type': payload.get('alert_type'),
-            'confidence': payload.get('confidence'),
-            'source': payload.get('source', 'audio'),
-            'details': f"Detected: {payload.get('phrase', '')}",
+            'timestamp': timestamp,
+            'alert_type': alert_type,
+            'confidence': confidence,
+            'source': source,
+            'details': f"Detected: {phrase}",
             'priority': priority
         }
         
@@ -157,15 +163,18 @@ class SimplifiedCentralHub:
     def handle_fall_alert(self, payload):
         """Process Fall Detection Alerts"""
         try:
+            # Store variables first
             mediapipe_state = payload.get('mediapipe_state')
             opencv_state = payload.get('opencv_state')
+            timestamp = payload.get('timestamp', datetime.now().isoformat())
+            source = payload.get('source', 'video')
             
             if mediapipe_state == "Fallen out of bed" or opencv_state == "Fallen out of bed":
                 print(f"FALL DETECTED: {mediapipe_state}")  # Simple console feedback
                 alert_data = {
-                    'timestamp': payload.get('timestamp', datetime.now().isoformat()),
+                    'timestamp': timestamp,
                     'alert_type': 'FALL_DETECTED',
-                    'source': payload.get('source', 'video'),
+                    'source': source,
                     'details': f"Patient fallen out of bed (MediaPipe: {mediapipe_state})",
                     'priority': 'HIGH'
                 }
