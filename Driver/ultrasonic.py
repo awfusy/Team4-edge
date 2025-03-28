@@ -8,7 +8,7 @@ from datetime import datetime
 mqtt_broker = "192.168.211.254"
 mqtt_port = 1883
 DISTANCE_THRESHOLD = 0.50  # 10cm in meters
-PUBLISH_INTERVAL = 1.0    # Seconds between readings
+PUBLISH_INTERVAL = 2.0    # Seconds between readings
 MAX_CONSECUTIVE_ERRORS = 3  # Number of errors before attempting restart
 SENSOR_ERROR_DELAY = 2.0    # Seconds to wait after sensor error
 ERROR_THRESHOLD = float('inf')  # Value returned on error
