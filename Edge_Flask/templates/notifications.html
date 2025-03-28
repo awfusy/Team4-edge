@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Alerts Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f7f9fc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .alert {
+            border-left: 5px solid;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .alert-high { border-color: #e74c3c; }
+        .alert-medium { border-color: #f39c12; }
+        .alert-low { border-color: #27ae60; }
+
+        .alert-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 15px;
+        }
+
+        .meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .acknowledge-button {
+            padding: 5px 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .acknowledged {
+            opacity: 0.6;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Patient Alerts - Room {{ room_number }}</h1>
+            <a href="/" class="back-button">Back to Dashboard</a>
+        </div>
+
+        <div class="filter-buttons">
+            <button class="filter-button" onclick="filterAlerts('all')">All Alerts</button>
+            <button class="filter-button" onclick="filterAlerts('high')">High Priority</button>
+            <button class="filter-button" onclick="filterAlerts('medium')">Medium Priority</button>
+            <button class="filter-button" onclick="filterAlerts('low')">Low Priority</button>
+        </div>
+
+        <div id="alerts-container">
+            {% for priority in ['high_priority', 'medium_priority', 'low_priority'] %}
+                {% for alert in data.alerts[priority] %}
+                <div class="alert alert-{{ priority.split('_')[0] }} {% if alert.acknowledged %}acknowledged{% endif %}">
+                    <div class="alert-content">
+                        <div>
+                            <strong>Type:</strong> {{ alert.alert_type }}<br>
+                            <strong>Source:</strong> {{ alert.source }}<br>
+                            <span class="meta">Priority: {{ alert.priority }}</span>
+                        </div>
+                        <div>
+                            <strong>Details:</strong><br>
+                            {{ alert.details }}
+                            {% if alert.source == 'audio' %}
+                                <br>Confidence: {{ alert.confidence }}
+                            {% endif %}
+                            {% if alert.source == 'proximity' %}
+                                <br>Distances: {{ alert.distances }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="meta">{{ alert.timestamp }}</span><br>
+                            {% if not alert.acknowledged %}
+                            <button class="acknowledge-button" 
+                                    onclick="acknowledgeAlert('{{ loop.index0 }}', '{{ priority.split('_')[0] }}')">
+                                Acknowledge
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function filterAlerts(priority) {
+            fetch(`/api/alerts?priority=${priority}`)
+                .then(response => response.json())
+                .then(alerts => {
+                    // Update alerts display
+                    location.reload();
+                });
+        }
+
+        function acknowledgeAlert(index, priority) {
+            fetch(`/api/alerts/acknowledge/${index}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ priority: priority })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        // Refresh alerts every 10 seconds
+        setInterval(() => {
+            location.reload();
+        }, 10000);
+    </script>
+</body>
+</html> 
