@@ -1,2 +1,24 @@
 pip install Flask
 pip install opencv-python
+
+# Install GPIOZero (for Raspberry Pi GPIO control)
+pip install gpiozero
+
+# libcamera is not installable via pip – see note below
+
+# Vosk (speech recognition model)
+pip install vosk
+
+# Noise reduction (scipy + librosa)
+pip install noisereduce
+
+# Librosa (audio processing)
+pip install librosa
+
+# Sounddevice (recording audio)
+pip install sounddevice
+
+# TensorFlow Lite Runtime (for edge devices)
+pip install tflite-runtime
+
+pip install mediapipe

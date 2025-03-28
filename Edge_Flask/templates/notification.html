@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Nurse Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -31,23 +32,36 @@
 <body>
     <h1>🩺 Nurse Notification Dashboard</h1>
 
-    <!-- Static examples -->
-    <div class="notification low">
-        <strong>Patient:</strong> Alice Tan<br>
-        <strong>Location:</strong> Ward 3B<br>
-        <span class="meta">Priority: Low</span>
+    <div id="notifications">
+        {% for note in notifications %}
+        <div class="notification {{ note.priority|lower }}">
+            <strong>👤 Patient Name:</strong> {{ note.name }}<br>
+            <strong>🏥 Room No:</strong> {{ note.room }}<br>
+            <strong>⚠️ Emergency Level:</strong> {{ note.priority }}<br>
+            <strong>🩺 Patient Condition:</strong> {{ note.condition }}<br>
+            <strong>🛏️ Still in Bed:</strong> {{ note.in_bed }}<br>
+            <span class="meta">{{ note.timestamp }}</span>
+        </div>
+        {% endfor %}
     </div>
+    
 
-    <div class="notification medium">
-        <strong>Patient:</strong> John Lim<br>
-        <strong>Location:</strong> ICU 2<br>
-        <span class="meta">Priority: Medium</span>
-    </div>
+    <script>
+        const socket = io();
 
-    <div class="notification high">
-        <strong>Patient:</strong> Maria Gomez<br>
-        <strong>Location:</strong> Emergency Room<br>
-        <span class="meta">Priority: High</span>
-    </div>
+        socket.on('new_notification', function(data) {
+            const container = document.getElementById('notifications');
+            const div = document.createElement('div');
+            div.className = 'notification ' + data.priority.toLowerCase();
+            div.innerHTML = `<strong>👤 Patient Name:</strong> ${data.name}<br>
+                            <strong>🏥 Room No:</strong> ${data.room}<br>
+                            <strong>⚠️ Emergency Level:</strong> ${data.priority}<br>
+                            <strong>🩺 Patient Condition:</strong> ${data.condition}<br>
+                            <strong>🛏️ Still in Bed:</strong> ${data.in_bed}<br>
+                            <span class="meta">${data.timestamp}</span>`;
+            container.prepend(div);
+        });
+
+    </script>
 </body>
 </html>
