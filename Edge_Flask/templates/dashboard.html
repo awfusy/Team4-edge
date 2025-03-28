@@ -1,163 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Patient Monitoring Dashboard</title>
     <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      /* Basic Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        /* Body Style */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
+      /* Body Style */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
 
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+      .dashboard-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
 
-        .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+      .panel {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
 
-        .status-indicator {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-weight: bold;
-        }
+      .status-indicator {
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
 
-        .status-normal { background-color: #4CAF50; color: white; }
-        .status-attention { background-color: #ff9800; color: white; }
-        .status-emergency { background-color: #f44336; color: white; }
+      .status-normal {
+        background-color: #4caf50;
+        color: white;
+      }
+      .status-attention {
+        background-color: #ff9800;
+        color: white;
+      }
+      .status-emergency {
+        background-color: #f44336;
+        color: white;
+      }
 
-        .video-feed {
-            width: 100%;
-            border-radius: 10px;
-            margin: 10px 0;
-        }
+      .video-feed {
+        width: 100%;
+        border-radius: 10px;
+        margin: 10px 0;
+      }
 
-        .current-states {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
+      .current-states {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+      }
 
-        .state-box {
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
+      .state-box {
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
 
-        .alert-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
+      .alert-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
 
-        .alert {
-            padding: 10px;
-            margin: 5px 0;
-            border-left: 4px solid;
-        }
+      .alert {
+        padding: 10px;
+        margin: 5px 0;
+        border-left: 4px solid;
+      }
 
-        .alert-high { border-color: #f44336; }
-        .alert-medium { border-color: #ff9800; }
-        .alert-low { border-color: #4CAF50; }
+      .alert-high {
+        border-color: #f44336;
+      }
+      .alert-medium {
+        border-color: #ff9800;
+      }
+      .alert-low {
+        border-color: #4caf50;
+      }
 
-        .timestamp {
-            font-size: 0.8em;
-            color: #666;
-        }
+      .timestamp {
+        font-size: 0.8em;
+        color: #666;
+      }
 
-        .refresh-button {
-            padding: 10px 20px;
-            background: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+      .refresh-button {
+        padding: 10px 20px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="dashboard-container">
-        <div class="panel">
-            <h1>Room {{ data.room_number }} - Patient Monitoring</h1>
-            
-            <div class="status-indicator status-{{ data.patient_status.lower() }}">
-                Patient Status: {{ data.patient_status }}
-            </div>
+      <div class="panel">
+        <h1>Room {{ data.room_number }} - Patient Monitoring</h1>
 
-            <div class="video-feed">
-                <h3>Live Video Feed:</h3>
-                <img src="{{ url_for('video_feed') }}" width="100%">
-            </div>
-
-            <div class="current-states">
-                <div class="state-box">
-                    <h3>Video Detection</h3>
-                    <p>Status: {{ data.current_states.video.details or 'No data' }}</p>
-                    <p class="timestamp">Last update: {{ data.current_states.video.last_updated or 'Never' }}</p>
-                </div>
-
-                <div class="state-box">
-                    <h3>Audio Detection</h3>
-                    <p>Last detection: {{ data.current_states.audio.details or 'No detection' }}</p>
-                    <p>Confidence: {{ data.current_states.audio.confidence or 'N/A' }}</p>
-                    <p class="timestamp">Last detection: {{ data.current_states.audio.last_detection or 'Never' }}</p>
-                </div>
-
-                <div class="state-box">
-                    <h3>Proximity Sensor</h3>
-                    <p>Patient in bed: {{ 'No' if data.current_states.proximity.out_of_bed else 'Yes' }}</p>
-                    <p>Distances: {{ data.current_states.proximity.distances or 'No data' }}</p>
-                    <p class="timestamp">Last reading: {{ data.current_states.proximity.last_reading or 'Never' }}</p>
-                </div>
-            </div>
+        <div class="status-indicator status-{{ data.patient_status.lower() }}">
+          Patient Status: {{ data.patient_status }}
         </div>
 
-        <div class="panel">
-            <h2>Recent Alerts</h2>
-            <button onclick="window.location.href='/notifications'" class="refresh-button">
-                View All Alerts
-            </button>
-            <div class="alert-list">
-                {% for alert in data.alerts.high_priority %}
-                <div class="alert alert-high">
-                    <strong>{{ alert.alert_type }}</strong>
-                    <p>{{ alert.details }}</p>
-                    <p class="timestamp">{{ alert.timestamp }}</p>
-                </div>
-                {% endfor %}
-            </div>
+        <div class="video-feed">
+          <h3>Live Video Feed:</h3>
+          <img
+            id="dashboard-stream"
+            src=""
+            width="100%"
+            alt="Live feed not available"
+          />
         </div>
+
+        <div class="current-states">
+          <div class="state-box">
+            <h3>Video Detection</h3>
+            <p>Status: {{ data.current_states.video.details or 'No data' }}</p>
+            <p class="timestamp">
+              Last update: {{ data.current_states.video.last_updated or 'Never'
+              }}
+            </p>
+          </div>
+
+          <div class="state-box">
+            <h3>Audio Detection</h3>
+            <p>
+              Last detection: {{ data.current_states.audio.details or 'No
+              detection' }}
+            </p>
+            <p>
+              Confidence: {{ data.current_states.audio.confidence or 'N/A' }}
+            </p>
+            <p class="timestamp">
+              Last detection: {{ data.current_states.audio.last_detection or
+              'Never' }}
+            </p>
+          </div>
+
+          <div class="state-box">
+            <h3>Proximity Sensor</h3>
+            <p>
+              Patient in bed: {{ 'No' if
+              data.current_states.proximity.out_of_bed else 'Yes' }}
+            </p>
+            <p>
+              Distances: {{ data.current_states.proximity.distances or 'No data'
+              }}
+            </p>
+            <p class="timestamp">
+              Last reading: {{ data.current_states.proximity.last_reading or
+              'Never' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Recent Alerts</h2>
+        <button
+          onclick="window.location.href='/notifications'"
+          class="refresh-button"
+        >
+          View All Alerts
+        </button>
+        <div class="alert-list">
+          {% for alert in data.alerts.high_priority %}
+          <div class="alert alert-high">
+            <strong>{{ alert.alert_type }}</strong>
+            <p>{{ alert.details }}</p>
+            <p class="timestamp">{{ alert.timestamp }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
 
     <script>
-        // Refresh dashboard data every 5 seconds
-        setInterval(function() {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    // Update dashboard with new data
-                    location.reload();
-                });
-        }, 5000);
+      // Refresh dashboard data every 5 seconds
+      setInterval(function () {
+        fetch("/api/status")
+          .then((response) => response.json())
+          .then((data) => {
+            // Update dashboard with new data
+            location.reload();
+          });
+      }, 5000);
     </script>
-</body>
+
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script>
+      const socket = io();
+      socket.on("update_frame", function (data) {
+        document.getElementById("dashboard-stream").src =
+          "data:image/jpeg;base64," + data;
+      });
+    </script>
+  </body>
 </html>

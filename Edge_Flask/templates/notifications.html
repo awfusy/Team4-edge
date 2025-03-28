@@ -118,10 +118,7 @@
                         <div>
                             <span class="meta">{{ alert.timestamp }}</span><br>
                             {% if not alert.acknowledged %}
-                            <button class="acknowledge-button" 
-                                    onclick="acknowledgeAlert('{{ loop.index0 }}', '{{ priority.split('_')[0] }}')">
-                                Acknowledge
-                            </button>
+                            
                             {% endif %}
                         </div>
                     </div>
