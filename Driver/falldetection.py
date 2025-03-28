@@ -23,12 +23,13 @@ KEYPOINTS = {
 }
 
 # MQTT Configuration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "192.168.211.254"
 MQTT_PORT = 1883
 MQTT_TOPIC = "video/emergency"
 
 # Add at the top of the file with other globals
-camera_active = False
+# SET TO FALSE LATER
+camera_active = True
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
@@ -112,7 +113,7 @@ def generate_frames():
                     continue
                 cap.set(cv2.CAP_PROP_FPS, 30)
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                cap.set(cv2.CAP_PROP_HEIGHT, 480)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
                 print("Camera activated")
             
             try:
