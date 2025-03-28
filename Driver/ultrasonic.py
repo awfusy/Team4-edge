@@ -42,7 +42,7 @@ def publish_data(sensor_data):
     """Send data to MQTT broker"""
     try:
         # Store result of publish
-        result = client.publish("proximity/alert", json.dumps(sensor_data))
+        result = client.publish("proximity/alert", json.dumps(sensor_data),qos=2)
         
         # Wait for publish to complete
         result.wait_for_publish()
@@ -154,7 +154,7 @@ if __name__ == "__main__":
                     timestamp = datetime.now().isoformat()
                     sensor_data = {
                         "out_of_bed": out_of_bed,
-                        "distance": distances_cm,
+                        "distances": distances_cm,
                         "timestamp": timestamp,
                         "source": "proximity"
                     }
