@@ -1,4 +1,3 @@
-
 import tflite_runtime.interpreter as tflite
 import sounddevice as sd
 import numpy as np
@@ -12,8 +11,38 @@ from vosk import Model, KaldiRecognizer
 import json
 import threading
 import os
+import paho.mqtt.client as mqtt
+from datetime import datetime
 
 warnings.filterwarnings("ignore", category=UserWarning)
+# Add MQTT Configuration
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
+MQTT_TOPIC = "audio/emergency"
+
+# Initialize MQTT client
+client = mqtt.Client()
+try:
+    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    client.loop_start()
+except Exception as e:
+    print(f"Failed to connect to MQTT broker: {e}")
+
+def send_mqtt_alert(class_id, confidence, detected_phrase=""):
+    """Send alert to MQTT broker"""
+    alert_data = {
+        "timestamp": datetime.now().isoformat(),
+        "alert_type": CLASS_LABELS[class_id],
+        "confidence": float(confidence),
+        "phrase": detected_phrase,
+        "source": "audio"
+    }
+    try:
+        client.publish(MQTT_TOPIC, json.dumps(alert_data), qos=2) #qos=2 for reliable delivery
+        print(f"MQTT Alert sent: {alert_data}")
+    except Exception as e:
+        print(f"Failed to send MQTT message: {e}")
+
 
 # --- Configuration ---
 SAMPLE_RATE = 16000
@@ -123,6 +152,7 @@ def audio_processing_thread():
                     if current_time - last_trigger_time > COOLDOWN_SECONDS and fall_process is None:
                         class_label = CLASS_LABELS.get(i, f"Class {i}")
                         print(f"TFLite Detected! Class: {class_label} (Confidence: {score:.2f})")
+                        send_mqtt_alert(i, score)
                         fall_process = subprocess.Popen(["python3", "falldetection.py"])
                         last_trigger_time = current_time
                     tflite_detected = True
@@ -135,6 +165,7 @@ def audio_processing_thread():
                     text = result.get("text", "").lower()
                     if text and any(keyword in text for keyword in KEYWORDS):
                         print(f"Vosk Detected: {text}")
+                        send_mqtt_alert(3, 0.75, text)
                         fall_process = subprocess.Popen(["python3", "falldetection.py"])
                         last_trigger_time = current_time
 

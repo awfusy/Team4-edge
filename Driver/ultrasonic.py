@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 # MQTT Configuration
-mqtt_broker = "172.20.10.2"  # Change this to your broker address
+mqtt_broker = "localhost"  # Change this to your broker address
 mqtt_port = 1883
 
 # Create MQTT client
@@ -50,13 +50,7 @@ while True:
         "source": "proximity"
     }
 
-    # Publish the sensor data (distance) to a topic
-    mqtt_payload_distance = {
-        "distance": sensor_data
-    }
-    client.publish(mqtt_topic_distance, json.dumps(mqtt_payload_distance))
 
-                
-
+    client.publish(mqtt_topic_distance, json.dumps(sensor_data), qos=2)
     sleep(1)  # Shorter delay for better responsiveness
 
