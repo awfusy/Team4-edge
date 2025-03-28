@@ -109,7 +109,7 @@ if __name__ == "__main__":
                                 "source": "proximity"
                             }
                             try:
-                                client.publish("proximity/error", json.dumps(alert_data), qos=1)
+                                client.publish("proximity/error", json.dumps(alert_data), qos=0)
                             except:
                                 print("Failed to send error alert")
 

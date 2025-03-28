@@ -31,6 +31,7 @@ class SimplifiedCentralHub:
             'audio/emergency': 2,     # Audio alerts from wake word
             'video/emergency': 2,     # Video alerts from fall detection
             'proximity/alert': 1,     # Proximity alerts from ultrasonic
+            'proximity/error': 0,     #Handle sensor errors
         }
 
         # Connection state tracking
@@ -117,24 +118,24 @@ class SimplifiedCentralHub:
         try:
             payload = json.loads(message.payload.decode('utf-8'))
             
-            # Use dict for handler mapping
+            # Add error handler to mapping
             handlers = {
                 "audio/emergency": self.handle_audio_alert,
                 "video/emergency": self.handle_fall_alert,
-                "proximity/alert": self.handle_proximity_alert
+                "proximity/alert": self.handle_proximity_alert,
+                "proximity/error": self.handle_sensor_error  # New handler
             }
             
             handler = handlers.get(message.topic)
             if handler:
                 handler(payload)
-                print(f"Handled {message.topic}")  # Simple console feedback
+                print(f"Handled {message.topic}")
         
         except json.JSONDecodeError:
             print(f"Invalid JSON on {message.topic}")
             self.logger.error(f"Invalid JSON on topic {message.topic}")
         except Exception as e:
             self.logger.error(f"Message processing error: {e}")
-
 
     def handle_audio_alert(self, payload):
         """Process Audio Alerts"""
@@ -230,6 +231,35 @@ class SimplifiedCentralHub:
         except Exception as e:
             print(f"Proximity alert error: {e}")  # Immediate console feedback
             self.logger.error(f"Proximity alert error: {e}")
+
+    def handle_sensor_error(self, payload):
+        """Handle sensor malfunction alerts"""
+        try:
+            error_msg = payload.get('error', 'Unknown sensor error')
+            timestamp = payload.get('timestamp', datetime.now().isoformat())
+            
+            print(f"SENSOR ERROR: {error_msg}")  # Immediate console feedback
+            
+            # Send high-priority alert to dashboard
+            alert_data = {
+                'timestamp': timestamp,
+                'alert_type': 'SENSOR_MALFUNCTION',
+                'source': 'proximity',
+                'details': error_msg,
+                'priority': 'HIGH'
+            }
+            
+            # Send to dashboard with QoS 2
+            self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=0)
+            self.logger.error(f"Sensor malfunction reported: {error_msg}")
+            
+            # Activate video monitoring as backup
+            video_alert = {'activate': True}
+            self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+            
+        except Exception as e:
+            print(f"Error handling sensor malfunction: {e}")
+            self.logger.error(f"Failed to process sensor error: {e}")
 
     def start(self):
         """Start the Central Hub"""
