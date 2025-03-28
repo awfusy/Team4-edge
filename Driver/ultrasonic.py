@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 # Configuration
-mqtt_broker = "172.20.10.2"
+mqtt_broker = "192.168.211.254"
 mqtt_port = 1883
 DISTANCE_THRESHOLD = 0.50  # 10cm in meters
 PUBLISH_INTERVAL = 1.0    # Seconds between readings
@@ -16,15 +16,40 @@ ERROR_THRESHOLD = float('inf')  # Value returned on error
 
 # Initialize MQTT
 client = mqtt.Client()
+client.loop_start()
+
+# Add at the top with other configurations
+mqtt_connected = False
 
 def on_connect(client, userdata, flags, rc):
-    print(f"Connected with result code {rc}")
+    """Handle MQTT connection"""
+    global mqtt_connected
+    if rc == 0:
+        mqtt_connected = True
+        print(f"✓ Connected to MQTT broker: {mqtt_broker}")
+    else:
+        mqtt_connected = False
+        print(f"✗ Connection failed with code {rc}")
 
 def on_disconnect(client, userdata, rc):
-    print(f"Disconnected with result code {rc}")
+    """Handle MQTT disconnections"""
+    global mqtt_connected
+    mqtt_connected = False
+    print(f"! Disconnected from broker with code: {rc}")
 
-client.on_connect = on_connect
-client.on_disconnect = on_disconnect
+def publish_with_confirmation(data):
+    """Publish with confirmation for QoS 1"""
+    try:
+        result = client.publish("proximity/alert", json.dumps(data), qos=1)
+        result.wait_for_publish()
+        if result.is_published():
+            print(f"✓ Data published successfully")
+            return True
+        print("! Publish confirmation not received")
+        return False
+    except Exception as e:
+        print(f"✗ Publish error: {e}")
+        return False
 
 # Initialize sensors with timeout
 try:
@@ -100,24 +125,12 @@ if __name__ == "__main__":
                     d3 = get_safe_distance(ultrasonic3, "Side sensor")
                     d4 = get_safe_distance(ultrasonic4, "Side sensor")
                     
-                    # Check for sensor errors
+                    # Check for sensor errors and attempt restart if needed
                     if d1 == ERROR_THRESHOLD or d2 == ERROR_THRESHOLD or d3 == ERROR_THRESHOLD or d4 == ERROR_THRESHOLD:
                         error_count += 1
                         print(f"Sensor error detected (count: {error_count})")
                         
                         if error_count >= MAX_CONSECUTIVE_ERRORS:
-                            # Alert about sensor issues
-                            alert_data = {
-                                "error": "Sensor malfunction detected",
-                                "timestamp": datetime.now().isoformat(),
-                                "source": "proximity"
-                            }
-                            try:
-                                client.publish("proximity/error", json.dumps(alert_data), qos=0)
-                            except:
-                                print("Failed to send error alert")
-
-                            # Attempt restart
                             if restart_sensors():
                                 error_count = 0
                             sleep(SENSOR_ERROR_DELAY)
@@ -129,7 +142,7 @@ if __name__ == "__main__":
                     # Reset error count if successful
                     error_count = 0
                     
-                    out_of_bed = check_bed_occupancy(d1, d2, d3 , d4)
+                    out_of_bed = check_bed_occupancy(d1, d2, d3, d4)
                     distances_cm = [d * 100 for d in [d1, d2, d3, d4]]
                     
                     sensor_data = {
@@ -139,14 +152,16 @@ if __name__ == "__main__":
                         "source": "proximity"
                     }
 
-                    # Try to publish
-                    try:
-                        client.publish("proximity/alert", json.dumps(sensor_data), qos=1)
-                        print(f"Distances: {[f'{d:.1f}' for d in distances_cm]} cm")
-                        print(f"Out of bed: {out_of_bed}")
+                    # Print sensor readings immediately
+                    print(f"Distances: {[f'{d:.1f}' for d in distances_cm]} cm")
+                    print(f"Out of bed: {out_of_bed}")
+
+                    # Then attempt to publish
+                    if publish_with_confirmation(sensor_data):
+                        print(f"✓ Data published successfully")
                         last_publish_time = current_time
-                    except Exception as e:
-                        print(f"Publish error: {e}")
+                    else:
+                        print(f"! Failed to publish data")
 
                 sleep(0.1)
 
@@ -159,10 +174,8 @@ if __name__ == "__main__":
     finally:
         print("Cleaning up...")
         try:
-            ultrasonic1.close()
-            ultrasonic2.close()
-            ultrasonic3.close()
-            ultrasonic4.close() 
+            for sensor in [ultrasonic1, ultrasonic2, ultrasonic3, ultrasonic4]:
+                sensor.close()
         except:
             pass
         try:
