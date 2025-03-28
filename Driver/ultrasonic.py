@@ -15,7 +15,7 @@ SENSOR_ERROR_DELAY = 2.0    # Seconds to wait after sensor error
 ERROR_THRESHOLD = float('inf')  # Value returned on error
 
 # Initialize MQTT
-client = mqtt.Client(client_id="UltrasonicSensor", clean_session=False)
+client = mqtt.Client()
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
@@ -28,9 +28,9 @@ client.on_disconnect = on_disconnect
 
 # Initialize sensors with timeout
 try:
-    ultrasonic1 = DistanceSensor(echo=17, trigger=4, max_distance=2.0, timeout=MAX_SENSOR_TIMEOUT)   # Head
-    ultrasonic2 = DistanceSensor(echo=27, trigger=22, max_distance=2.0, timeout=MAX_SENSOR_TIMEOUT)  # Foot
-    ultrasonic3 = DistanceSensor(echo=5, trigger=6, max_distance=2.0, timeout=MAX_SENSOR_TIMEOUT)    # Side
+    ultrasonic1 = DistanceSensor(echo=17, trigger=4)   
+    ultrasonic2 = DistanceSensor(echo=27, trigger=22)  
+    ultrasonic3 = DistanceSensor(echo=5, trigger=6)    
 except Exception as e:
     print(f"Failed to initialize sensors: {e}")
     exit(1)
