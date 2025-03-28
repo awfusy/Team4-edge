@@ -22,11 +22,41 @@ MQTT_TOPIC = "audio/emergency"
 
 # Initialize MQTT client
 client = mqtt.Client()
+
+# Add MQTT callbacks
+def on_connect(client, userdata, flags, rc):
+    """MQTT Connection Callback"""
+    connection_codes = {
+        0: "Connected successfully",
+        1: "Incorrect protocol version",
+        2: "Invalid client identifier",
+        3: "Server unavailable",
+        4: "Bad username or password",
+        5: "Not authorized"
+    }
+    print(f"Connected with result code: {connection_codes.get(rc, 'Unknown error')}")
+
+def on_disconnect(client, userdata, rc):
+    """Handle disconnections"""
+    if rc != 0:
+        print(f"Unexpected disconnection. Code: {rc}")
+        # Try to reconnect
+        try:
+            client.reconnect()
+        except Exception as e:
+            print(f"Reconnection failed: {e}")
+
+# Add callbacks to client
+client.on_connect = on_connect
+client.on_disconnect = on_disconnect
+
+# Modify the MQTT connection part
 try:
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
     client.loop_start()
 except Exception as e:
     print(f"Failed to connect to MQTT broker: {e}")
+    # Don't exit, let it try to reconnect
 
 def send_mqtt_alert(class_id, confidence, detected_phrase=""):
     """Send alert to MQTT broker"""

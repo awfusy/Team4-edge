@@ -5,9 +5,9 @@ import json
 from datetime import datetime
 
 # Configuration
-mqtt_broker = "localhost"
+mqtt_broker = "172.20.10.2"
 mqtt_port = 1883
-DISTANCE_THRESHOLD = 0.10  # 10cm in meters
+DISTANCE_THRESHOLD = 0.50  # 10cm in meters
 PUBLISH_INTERVAL = 1.0    # Seconds between readings
 MAX_SENSOR_TIMEOUT = 1.0  # Maximum time to wait for sensor reading
 MAX_CONSECUTIVE_ERRORS = 3  # Number of errors before attempting restart
@@ -50,7 +50,8 @@ def get_safe_distance(sensor, sensor_name):
 
 def check_bed_occupancy(d1, d2, d3, d4):
     """Simple bed occupancy check using raw meter values"""
-    return all(d < DISTANCE_THRESHOLD for d in [d1, d2, d3, d4])
+    return not((d1 < DISTANCE_THRESHOLD) and (d2 < DISTANCE_THRESHOLD) and (d3 < DISTANCE_THRESHOLD) and (d4 < DISTANCE_THRESHOLD))
+
 
 def restart_sensors():
     """Attempt to restart sensors"""
@@ -128,12 +129,12 @@ if __name__ == "__main__":
                     # Reset error count if successful
                     error_count = 0
                     
-                    patient_on_bed = check_bed_occupancy(d1, d2, d3 , d4)
+                    out_of_bed = check_bed_occupancy(d1, d2, d3 , d4)
                     distances_cm = [d * 100 for d in [d1, d2, d3, d4]]
                     
                     sensor_data = {
-                        "out_of_bed": not patient_on_bed,
-                        "distances": distances_cm,
+                        "out_of_bed": out_of_bed,
+                        "distance": distances_cm,
                         "timestamp": datetime.now().isoformat(),
                         "source": "proximity"
                     }
@@ -142,7 +143,7 @@ if __name__ == "__main__":
                     try:
                         client.publish("proximity/alert", json.dumps(sensor_data), qos=1)
                         print(f"Distances: {[f'{d:.1f}' for d in distances_cm]} cm")
-                        print(f"Patient on bed: {patient_on_bed}")
+                        print(f"Out of bed: {out_of_bed}")
                         last_publish_time = current_time
                     except Exception as e:
                         print(f"Publish error: {e}")
@@ -169,4 +170,5 @@ if __name__ == "__main__":
             client.disconnect()
         except:
             pass
+
 
