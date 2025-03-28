@@ -50,7 +50,8 @@ def get_safe_distance(sensor, sensor_name):
 
 def check_bed_occupancy(d1, d2, d3, d4):
     """Simple bed occupancy check using raw meter values"""
-    return all(d < DISTANCE_THRESHOLD for d in [d1, d2, d3, d4])
+    return (d1 < DISTANCE_THRESHOLD) and (d2 < DISTANCE_THRESHOLD) and (d3 < DISTANCE_THRESHOLD) and (d4 < DISTANCE_THRESHOLD)
+
 
 def restart_sensors():
     """Attempt to restart sensors"""
