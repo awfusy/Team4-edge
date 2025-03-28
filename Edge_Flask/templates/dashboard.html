@@ -120,12 +120,40 @@
 
         <div class="video-feed">
           <h3>Live Video Feed:</h3>
-          <img
-            id="dashboard-stream"
-            src=""
-            width="100%"
-            alt="Live feed not available"
-          />
+          <div style="position: relative; height: 660px">
+            <img
+              id="dashboard-stream"
+              src=""
+              alt="Live feed"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 10px;
+                display: none;
+              "
+            />
+            <div
+              id="stream-placeholder"
+              style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #ccc;
+                color: #555;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                font-size: 1.2rem;
+                font-weight: bold;
+              "
+            >
+              Live stream not available
+            </div>
+          </div>
         </div>
 
         <div class="current-states">
@@ -191,24 +219,57 @@
       </div>
     </div>
 
-    <script>
-      // Refresh dashboard data every 5 seconds
-      setInterval(function () {
-        fetch("/api/status")
-          .then((response) => response.json())
-          .then((data) => {
-            // Update dashboard with new data
-            location.reload();
-          });
-      }, 5000);
-    </script>
-
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
       const socket = io();
+      const stream = document.getElementById("dashboard-stream");
+      const placeholder = document.getElementById("stream-placeholder");
+
+      let streamStartTime = null;
+      let streamTimeout;
+      let streamActive = false;
+
+      // Function to stop stream and show placeholder
+      function stopStream() {
+        stream.style.display = "none";
+        placeholder.style.display = "flex"; // Must match the CSS flex display
+        streamActive = false;
+        streamStartTime = null;
+        console.log("Stream stopped after 5 mins");
+      }
+
       socket.on("update_frame", function (data) {
-        document.getElementById("dashboard-stream").src =
-          "data:image/jpeg;base64," + data;
+        // Update the frame
+        stream.src = "data:image/jpeg;base64," + data;
+
+        // If stream wasn't active, start it and set timeout
+        if (!streamActive) {
+          stream.style.display = "block";
+          placeholder.style.display = "none";
+          streamActive = true;
+          streamStartTime = Date.now();
+
+          // Set single timeout that won't reset
+          clearTimeout(streamTimeout);
+          streamTimeout = setTimeout(stopStream, 300000);
+        }
+
+        // Force stop if more than 10 seconds have passed
+        if (streamStartTime && Date.now() - streamStartTime >= 300000) {
+          stopStream();
+        }
+      });
+
+      // Handle disconnection
+      socket.on("disconnect", function () {
+        stopStream();
+        console.log("🔌 WebSocket disconnected");
+      });
+
+      // Initialize with placeholder visible
+      window.addEventListener("DOMContentLoaded", () => {
+        stream.style.display = "none";
+        placeholder.style.display = "flex";
       });
     </script>
   </body>

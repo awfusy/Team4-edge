@@ -9,7 +9,7 @@ import cv2
 from flask_socketio import SocketIO, emit
 import json
 import threading
-# import paho.mqtt.client as mqtt  # MQTT temporarily disabled
+import paho.mqtt.client as mqtt  # MQTT temporarily disabled
 import random
 
 app = Flask(__name__)
@@ -76,41 +76,50 @@ def add_alert(alert_data):
     else:
         dashboard_data['alerts']['low_priority'].appendleft(alert_data)
 
-# MQTT temporarily disabled
-# mqtt_client = mqtt.Client()
-#
-# patient_names = ["Alice Tan", "John Lim", "Maria Gomez", "David Chen", "Nora Ali"]
-# room_numbers = ["Ward 1A", "Ward 2B", "ICU 3", "Room 4D", "Emergency Room"]
-#
-# def on_connect(client, userdata, flags, rc):
-#     print("Connected to MQTT broker with code:", rc)
-#     client.subscribe("nurse/dashboard")
-#
-# def on_message(client, userdata, msg):
-#     try:
-#         raw = json.loads(msg.payload.decode())
-#         notification = {
-#             "name": random.choice(patient_names),
-#             "room": random.choice(room_numbers),
-#             "priority": raw.get("priority", "MEDIUM"),
-#             "condition": raw.get("alert_type", "Unknown"),
-#             "in_bed": "No" if "out" in raw.get("alert_type", "").lower() else "Yes",
-#             "timestamp": raw.get("timestamp", "")
-#         }
-#         notifications.append(notification)
-#         socketio.emit('new_notification', notification)
-#         add_alert(raw)
-#     except Exception as e:
-#         print("MQTT error:", e)
-#
-# mqtt_client.on_connect = on_connect
-# mqtt_client.on_message = on_message
-#
-# try:
-#     mqtt_client.connect("192.168.203.2", 1883, 60)
-#     mqtt_client.loop_start()
-# except Exception as e:
-#     print(f"Failed to connect to MQTT broker: {e}")
+mqtt_client = mqtt.Client()
+
+patient_names = ["Alice Tan", "John Lim", "Maria Gomez", "David Chen", "Nora Ali"]
+room_numbers = ["Ward 1A", "Ward 2B", "ICU 3", "Room 4D", "Emergency Room"]
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT broker with code:", rc)
+    client.subscribe("nurse/dashboard")
+
+def on_message(client, userdata, msg):
+    try:
+        payload = msg.payload.decode()
+        print(f"📥 MQTT message received on topic '{msg.topic}': {payload}")
+        
+        raw = json.loads(payload)
+
+        # Debug individual keys (optional)
+        print("🧾 Parsed JSON content:")
+        for key, value in raw.items():
+            print(f"  {key}: {value}")
+
+        notification = {
+            "name": random.choice(patient_names),
+            "room": random.choice(room_numbers),
+            "priority": raw.get("priority", "MEDIUM"),
+            "condition": raw.get("alert_type", "Unknown"),
+            "in_bed": "No" if "out" in raw.get("alert_type", "").lower() else "Yes",
+            "timestamp": raw.get("timestamp", "")
+        }
+        notifications.append(notification)
+        socketio.emit('new_notification', notification)
+        add_alert(raw)
+    except Exception as e:
+        print("MQTT error:", e)
+
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+
+try:
+    mqtt_client.connect("192.168.211.254", 1883, 60)
+    mqtt_client.loop_start()
+except Exception as e:
+    print(f"Failed to connect to MQTT broker: {e}")
+
 
 @app.route('/')
 def index():
