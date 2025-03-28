@@ -9,46 +9,53 @@ mqtt_broker = "192.168.211.254"
 mqtt_port = 1883
 DISTANCE_THRESHOLD = 0.50  # 10cm in meters
 PUBLISH_INTERVAL = 1.0    # Seconds between readings
-MAX_SENSOR_TIMEOUT = 1.0  # Maximum time to wait for sensor reading
 MAX_CONSECUTIVE_ERRORS = 3  # Number of errors before attempting restart
 SENSOR_ERROR_DELAY = 2.0    # Seconds to wait after sensor error
 ERROR_THRESHOLD = float('inf')  # Value returned on error
 
-# Initialize MQTT
+# Initialize MQTT client
 client = mqtt.Client()
-client.loop_start()
-
-# Add at the top with other configurations
-mqtt_connected = False
 
 def on_connect(client, userdata, flags, rc):
-    """Handle MQTT connection"""
-    global mqtt_connected
-    if rc == 0:
-        mqtt_connected = True
-        print(f"✓ Connected to MQTT broker: {mqtt_broker}")
-    else:
-        mqtt_connected = False
-        print(f"✗ Connection failed with code {rc}")
+    """MQTT Connection Callback"""
+    connection_codes = {
+        0: "Connected successfully",
+        1: "Incorrect protocol version",
+        2: "Invalid client identifier",
+        3: "Server unavailable",
+        4: "Bad username or password",
+        5: "Not authorized"
+    }
+    print(f"Connected with result code: {connection_codes.get(rc, 'Unknown error')}")
 
 def on_disconnect(client, userdata, rc):
-    """Handle MQTT disconnections"""
-    global mqtt_connected
-    mqtt_connected = False
-    print(f"! Disconnected from broker with code: {rc}")
+    """Handle disconnections"""
+    if rc != 0:
+        print(f"Unexpected disconnection. Code: {rc}")
+        # Try to reconnect
+        try:
+            client.reconnect()
+        except Exception as e:
+            print(f"Reconnection failed: {e}")
 
-def publish_with_confirmation(data):
-    """Publish with confirmation for QoS 1"""
+def publish_data(sensor_data):
+    """Send data to MQTT broker"""
     try:
-        result = client.publish("proximity/alert", json.dumps(data), qos=1)
+        # Store result of publish
+        result = client.publish("proximity/alert", json.dumps(sensor_data))
+        
+        # Wait for publish to complete
         result.wait_for_publish()
+        
         if result.is_published():
-            print(f"✓ Data published successfully")
+            print(f"â Data successfully published")
             return True
-        print("! Publish confirmation not received")
-        return False
+        else:
+            print(f"! Data may not have been delivered")
+            return False
+            
     except Exception as e:
-        print(f"✗ Publish error: {e}")
+        print(f"â Failed to send MQTT message: {e}")
         return False
 
 # Initialize sensors with timeout
@@ -108,8 +115,8 @@ if __name__ == "__main__":
             client.connect(mqtt_broker, mqtt_port, 60)
             client.loop_start()
         except Exception as e:
-            print(f"MQTT connection failed: {e}")
-            exit(1)
+            print(f"Failed to connect to MQTT broker: {e}")
+            # Don't exit, let it try to reconnect
 
         last_publish_time = 0
         error_count = 0
@@ -143,25 +150,26 @@ if __name__ == "__main__":
                     error_count = 0
                     
                     out_of_bed = check_bed_occupancy(d1, d2, d3, d4)
-                    distances_cm = [d * 100 for d in [d1, d2, d3, d4]]
-                    
+                    distances_cm = [round(d * 100, 2) for d in [d1, d2, d3, d4]]
+                    timestamp = datetime.now().isoformat()
                     sensor_data = {
                         "out_of_bed": out_of_bed,
                         "distance": distances_cm,
-                        "timestamp": datetime.now().isoformat(),
+                        "timestamp": timestamp,
                         "source": "proximity"
                     }
 
                     # Print sensor readings immediately
                     print(f"Distances: {[f'{d:.1f}' for d in distances_cm]} cm")
                     print(f"Out of bed: {out_of_bed}")
+                    print(f"Timestamp: {timestamp}")
 
                     # Then attempt to publish
-                    if publish_with_confirmation(sensor_data):
-                        print(f"✓ Data published successfully")
+                    if publish_data(sensor_data):
                         last_publish_time = current_time
                     else:
-                        print(f"! Failed to publish data")
+                        print("! Will retry on next interval")
+                        # Don't update last_publish_time so it retries immediately next loop
 
                 sleep(0.1)
 
@@ -183,5 +191,6 @@ if __name__ == "__main__":
             client.disconnect()
         except:
             pass
+
 
 
