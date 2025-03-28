@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 
 class SimplifiedCentralHub:
-    def __init__(self, broker_address='localhost', broker_port=1883, reconnect_delay=3, publish_retry_delay=3):
+    def __init__(self, broker_address='192.168.211.254', broker_port=1883, reconnect_delay=3, publish_retry_delay=3):
         # MQTT Client Setup with clean_session=False for reliability
         self.client_id = "CentralHub"
         self.client = mqtt.Client(client_id=self.client_id, clean_session=False)
@@ -103,14 +103,20 @@ class SimplifiedCentralHub:
                     time.sleep(self.publish_retry_delay)
                     continue
                 
-                self.client.publish(topic, json.dumps(payload), qos=1)
-                return  # If publish didn't raise an exception, we're done
-            
+                result = self.client.publish(topic, json.dumps(payload), qos=1)
+                result.wait_for_publish()
+                
+                if result.is_published():
+                    print(f"✓ Successfully published to {topic}")
+                    print(f"  Details: {payload}")
+                    return  # If publish successful, we're done
+                
             except Exception as e:
-                print(f"Publish error on attempt {attempt + 1}: {e}")
+                print(f"✗ Publish error on attempt {attempt + 1}: {e}")
                 self.logger.error(f"Publish error on attempt {attempt + 1}: {e}")
                 time.sleep(self.publish_retry_delay)
         
+        print(f"! Failed to publish to {topic} after {max_retries} attempts")
         self.logger.error(f"Failed to publish to {topic} after {max_retries} attempts")
 
     def on_message(self, client, userdata, message):
@@ -158,8 +164,17 @@ class SimplifiedCentralHub:
             'priority': priority
         }
         
-        self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
-        self.logger.info(f"Audio Alert Sent: {alert_data}")
+        try:
+            result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+            result.wait_for_publish()
+            if result.is_published():
+                print(f"✓ Audio alert successfully published to dashboard")
+                self.logger.info(f"Audio Alert Sent: {alert_data}")
+            else:
+                print(f"! Audio alert may not have been delivered")
+        except Exception as e:
+            print(f"✗ Failed to publish audio alert: {e}")
+            self.logger.error(f"Failed to publish audio alert: {e}")
 
     def handle_fall_alert(self, payload):
         """Process Fall Detection Alerts"""
@@ -180,10 +195,16 @@ class SimplifiedCentralHub:
                     'priority': 'HIGH'
                 }
                 
-                self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
-                self.logger.info(f"Fall Alert Sent: {alert_data}")
+                result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+                result.wait_for_publish()
+                if result.is_published():
+                    print(f"✓ Fall alert successfully published to dashboard")
+                    self.logger.info(f"Fall Alert Sent: {alert_data}")
+                else:
+                    print(f"! Fall alert may not have been delivered")
         
         except Exception as e:
+            print(f"✗ Failed to publish fall alert: {e}")
             self.logger.error(f"Fall detection error: {e}")
 
     def handle_proximity_alert(self, payload):
@@ -212,7 +233,10 @@ class SimplifiedCentralHub:
             if out_of_bed:
                 # Activate video
                 video_alert = {'activate': True}
-                self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                result.wait_for_publish()
+                if result.is_published():
+                    print(f"✓ Video activation alert published")
                 
                 # Send alert
                 alert_data = {
@@ -222,14 +246,20 @@ class SimplifiedCentralHub:
                     'distances': distances,
                     'priority': 'HIGH'
                 }
-                self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+                result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+                result.wait_for_publish()
+                if result.is_published():
+                    print(f"✓ Out-of-bed alert successfully published")
             else:
                 # Deactivate video
                 video_alert = {'activate': False}
-                self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                result.wait_for_publish()
+                if result.is_published():
+                    print(f"✓ Video deactivation alert published")
                 
         except Exception as e:
-            print(f"Proximity alert error: {e}")  # Immediate console feedback
+            print(f"✗ Proximity alert error: {e}")
             self.logger.error(f"Proximity alert error: {e}")
 
     def handle_sensor_error(self, payload):
@@ -249,16 +279,19 @@ class SimplifiedCentralHub:
                 'priority': 'HIGH'
             }
             
-            # Send to dashboard with QoS 2
-            self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=0)
+            result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=0)
+            print(f"✓ Sensor error alert published")
             self.logger.error(f"Sensor malfunction reported: {error_msg}")
             
             # Activate video monitoring as backup
             video_alert = {'activate': True}
-            self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+            result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+            result.wait_for_publish()
+            if result.is_published():
+                print(f"✓ Video activation (due to sensor error) published")
             
         except Exception as e:
-            print(f"Error handling sensor malfunction: {e}")
+            print(f"✗ Error handling sensor malfunction: {e}")
             self.logger.error(f"Failed to process sensor error: {e}")
 
     def start(self):

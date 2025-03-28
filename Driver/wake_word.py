@@ -68,10 +68,20 @@ def send_mqtt_alert(class_id, confidence, detected_phrase=""):
         "source": "audio"
     }
     try:
-        client.publish(MQTT_TOPIC, json.dumps(alert_data), qos=2) #qos=2 for reliable delivery
-        print(f"MQTT Alert sent: {alert_data}")
+        # Store result of publish
+        result = client.publish(MQTT_TOPIC, json.dumps(alert_data), qos=2)
+        
+        # Wait for publish to complete (for QoS 2)
+        result.wait_for_publish()
+        
+        if result.is_published():
+            print(f"✓ MQTT Alert successfully published")
+            print(f"  Details: {alert_data}")
+        else:
+            print(f"! MQTT Alert may not have been delivered")
+            
     except Exception as e:
-        print(f"Failed to send MQTT message: {e}")
+        print(f"✗ Failed to send MQTT message: {e}")
 
 
 # --- Configuration ---
