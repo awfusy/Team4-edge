@@ -192,20 +192,19 @@ def generate_frames():
                         y_offset += 20
 
                     mqttDataMP = state_mediapipe
-                    mqttDataOCV = state_opencv
-                    print(mqttDataMP)
-                    print(mqttDataOCV)
-
+                    #mqttDataOCV = state_opencv #ignored due to not having fallen down
+                    #print(mqttDataMP)
+                    #print(mqttDataOCV)
+                if mqttDataMP == "Fallen out of bed":
                     mqtt_data = {
                         "timestamp": datetime.now().isoformat(),
                         "mediapipe_state": mqttDataMP,
-                        "opencv_state": mqttDataOCV,
                         "source": "video"
                     }
 
                     try:
                         client.publish(MQTT_TOPIC, json.dumps(mqtt_data), qos=2)
-                        print(f"States sent via MQTT: MP={mqttDataMP}, OCV={mqttDataOCV}")
+                        print(f"Fall alert sent via MQTT: State={mqttDataMP}")
                     except Exception as e:
                         print(f"Failed to send MQTT message: {e}")
 

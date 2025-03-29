@@ -26,12 +26,18 @@ class SimplifiedCentralHub:
         )
         self.logger = logging.getLogger(__name__)
         
-        # Topics Configuration
+        # Topics Configuration with QoS levels
         self.topics = {
             'audio/emergency': 2,     # Audio alerts from wake word
             'video/emergency': 2,     # Video alerts from fall detection
-            'proximity/alert': 1,     # Proximity alerts from ultrasonic
-            'proximity/error': 0,     #Handle sensor errors
+            'proximity/alert': 2,     # Proximity alerts from ultrasonic
+        }
+        
+        # Handler mapping - maps topics to their handler methods
+        self.handlers = {
+            'proximity/alert': self.handle_proximity_alert,
+            'audio/emergency': self.handle_audio_alert,
+            'video/emergency': self.handle_fall_alert
         }
 
         # Connection state tracking
@@ -58,16 +64,24 @@ class SimplifiedCentralHub:
         self.connection_active = True
         self.logger.info(f"Connected to MQTT Broker {self.broker_address}")
         
-        # Subscribe to all topics
+        # First clear any retained messages
+        print("Clearing retained messages...")
+        for topic in self.topics:
+            self.client.publish(topic, "", qos=1, retain=True)
+        time.sleep(0.5)  # Small delay to ensure clearing completes
+        
+        # Then subscribe to topics
         for topic, qos in self.topics.items():
             try:
-                result, mid = self.client.subscribe(topic, qos)
-                if result == mqtt.MQTT_ERR_SUCCESS:
-                    print(f"Subscribed to {topic}")  # Simple console feedback
+                result, _ = self.client.subscribe(topic, qos)  # Unpack the tuple
+                if result == mqtt.MQTT_ERR_SUCCESS:  # Check result[0]
+                    print(f"Subscribed to {topic} with QoS {qos}")  # Simple console feedback
                     self.logger.info(f"Subscribed to {topic} with QoS {qos}")
                 else:
+                    print(f"Failed to subscribe to {topic}")  # Added print
                     self.logger.error(f"Failed to subscribe to {topic}")
             except Exception as e:
+                print(f"Subscription error for {topic}: {e}")  # Added print
                 self.logger.error(f"Subscription error for {topic}: {e}")
 
     def on_disconnect(self, client, userdata, rc):
@@ -94,57 +108,49 @@ class SimplifiedCentralHub:
                 time.sleep(self.reconnect_delay)
 
     def publish_with_retry(self, topic, payload, max_retries=3):
-        """Publish messages with retry mechanism"""
-        for attempt in range(max_retries):
-            try:
-                if not self.connection_active:
-                    print(f"Not connected to broker. Attempt {attempt + 1}/{max_retries}")  
-                    self.logger.error("Not connected to broker")
-                    time.sleep(self.publish_retry_delay)
-                    continue
-                
-                result = self.client.publish(topic, json.dumps(payload), qos=1)
-                result.wait_for_publish()
-                
-                if result.is_published():
-                    print(f"✓ Successfully published to {topic}")
-                    print(f"  Details: {payload}")
-                    return  # If publish successful, we're done
-                
-            except Exception as e:
-                print(f"✗ Publish error on attempt {attempt + 1}: {e}")
-                self.logger.error(f"Publish error on attempt {attempt + 1}: {e}")
-                time.sleep(self.publish_retry_delay)
-        
-        print(f"! Failed to publish to {topic} after {max_retries} attempts")
-        self.logger.error(f"Failed to publish to {topic} after {max_retries} attempts")
+        """Publish messages with retry mechanism - non-blocking version"""
+        try:
+            if not self.connection_active:
+                print(f"! Not connected to broker - skipping publish to {topic}")
+                return False
+            
+            # Single publish attempt with QoS handling
+            result = self.client.publish(topic, json.dumps(payload), qos=1)
+            
+            # Quick check for immediate errors
+            if result.rc != mqtt.MQTT_ERR_SUCCESS:
+                print(f"✗ Failed to publish to {topic}: {result.rc}")
+                return False
+            
+            print(f"✓ Published to {topic}")
+            return True
+
+        except Exception as e:
+            print(f"✗ Publish error: {e}")
+            return False
 
     def on_message(self, client, userdata, message):
         """Message Handler"""
         try:
+            # Skip empty messages (like the ones used to clear retained messages) silently
+            if not message.payload or message.payload.decode('utf-8').strip() == "":
+                return
+            
+            print(f"Received message on topic: {message.topic}")
             payload = json.loads(message.payload.decode('utf-8'))
             
-            # Add error handler to mapping
-            handlers = {
-                "audio/emergency": self.handle_audio_alert,
-                "video/emergency": self.handle_fall_alert,
-                "proximity/alert": self.handle_proximity_alert,
-                "proximity/error": self.handle_sensor_error  # New handler
-            }
-            
-            handler = handlers.get(message.topic)
-            if handler:
-                handler(payload)
-                print(f"Handled {message.topic}")
-        
-        except json.JSONDecodeError:
-            print(f"Invalid JSON on {message.topic}")
-            self.logger.error(f"Invalid JSON on topic {message.topic}")
+            # Direct call to handlers based on topic
+            if message.topic in self.handlers:
+                self.handlers[message.topic](payload)
+                
         except Exception as e:
+            print(f"Message processing error: {e}")
             self.logger.error(f"Message processing error: {e}")
 
     def handle_audio_alert(self, payload):
-        """Process Audio Alerts"""
+        """Process Audio Alerts - Non-blocking version"""
+        video_alert = {'activate': True}
+        self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
         # Store variables first
         phrase = payload.get('phrase', '')
         alert_type = payload.get('alert_type')
@@ -156,7 +162,7 @@ class SimplifiedCentralHub:
         priority = 'HIGH' if alert_type in ['Urgent Assistance', 'Pain/Discomfort'] else 'MEDIUM'
         
         alert_data = {
-            'timestamp': timestamp,
+            'timestamp': timestamp,  # Use current time
             'alert_type': alert_type,
             'confidence': confidence,
             'source': source,
@@ -165,44 +171,46 @@ class SimplifiedCentralHub:
         }
         
         try:
+            # Non-blocking publish (no wait_for_publish)
             result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
-            result.wait_for_publish()
-            if result.is_published():
-                print(f"✓ Audio alert successfully published to dashboard")
-                self.logger.info(f"Audio Alert Sent: {alert_data}")
+            
+            # Still check initial result code but don't wait for full handshake
+            if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                print(f"✓ Audio alert publish initiated (QoS 2 in progress)")
+                self.logger.info(f"Audio Alert Started: {phrase}")
             else:
-                print(f"! Audio alert may not have been delivered")
+                print(f"✗ Failed to initiate audio alert publish: {result.rc}")
         except Exception as e:
             print(f"✗ Failed to publish audio alert: {e}")
             self.logger.error(f"Failed to publish audio alert: {e}")
 
     def handle_fall_alert(self, payload):
-        """Process Fall Detection Alerts"""
+        """Process Fall Detection Alerts - Non-blocking version"""
         try:
             # Store variables first
             mediapipe_state = payload.get('mediapipe_state')
-            opencv_state = payload.get('opencv_state')
+            #opencv_state = payload.get('opencv_state') #ignored due to not having fallen down
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'video')
-            
-            if mediapipe_state == "Fallen out of bed" or opencv_state == "Fallen out of bed":
-                print(f"FALL DETECTED: {mediapipe_state}")  # Simple console feedback
-                alert_data = {
-                    'timestamp': timestamp,
+
+            print(f"FALL DETECTED: {mediapipe_state}")  # Simple console feedback
+            alert_data = {
+                    'timestamp': timestamp,  # Use current time
                     'alert_type': 'FALL_DETECTED',
                     'source': source,
                     'details': f"Patient fallen out of bed (MediaPipe: {mediapipe_state})",
                     'priority': 'HIGH'
                 }
                 
-                result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
-                result.wait_for_publish()
-                if result.is_published():
-                    print(f"✓ Fall alert successfully published to dashboard")
-                    self.logger.info(f"Fall Alert Sent: {alert_data}")
-                else:
-                    print(f"! Fall alert may not have been delivered")
-        
+            # Non-blocking publish (no wait_for_publish)
+            result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+                
+                # Still check initial result code but don't wait for full handshake
+            if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                print(f"✓ Fall alert publish initiated (QoS 2 in progress)")
+                self.logger.info(f"Fall Alert Started")
+                print(f"✗ Failed to initiate fall alert publish: {result.rc}")
+
         except Exception as e:
             print(f"✗ Failed to publish fall alert: {e}")
             self.logger.error(f"Fall detection error: {e}")
@@ -210,20 +218,19 @@ class SimplifiedCentralHub:
     def handle_proximity_alert(self, payload):
         """Process Proximity Alerts"""
         try:
+            print(payload)  # Print the raw payload first
+            
+            # Extract with correct key names
             out_of_bed = payload.get('out_of_bed', False)
-            distances = payload.get('distances', [])
+            distances = payload.get('distances', [])  
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'proximity')
             
-            # Print simple status
-            status = "OUT OF BED" if out_of_bed else "In bed"
-            print(f"Patient Status: {status} - Distances: {distances}")
-
             # Always send proximity data
             proximity_data = {
-                'timestamp': timestamp,
+                'timestamp': timestamp,  # Use CURRENT time for outgoing messages
                 'alert_type': 'PROXIMITY_DATA',
-                'source': 'proximity',
+                'source': source,
                 'distances': distances,
                 'priority': 'LOW'
             }
@@ -233,92 +240,79 @@ class SimplifiedCentralHub:
             if out_of_bed:
                 # Activate video
                 video_alert = {'activate': True}
-                result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
-                result.wait_for_publish()
-                if result.is_published():
-                    print(f"✓ Video activation alert published")
+                self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                print(f"✓ Video activation alert published")
                 
                 # Send alert
                 alert_data = {
-                    'timestamp': timestamp,
+                    'timestamp': datetime.now().isoformat(),  # Use CURRENT time
                     'alert_type': 'PATIENT_OUT_OF_BED',
                     'source': source,
                     'distances': distances,
                     'priority': 'HIGH'
                 }
-                result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
-                result.wait_for_publish()
-                if result.is_published():
-                    print(f"✓ Out-of-bed alert successfully published")
+                self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=2)
+                print(f"✓ Out-of-bed alert published")
             else:
                 # Deactivate video
                 video_alert = {'activate': False}
-                result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
-                result.wait_for_publish()
-                if result.is_published():
-                    print(f"✓ Video deactivation alert published")
-                
+                self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+                print(f"✓ Video deactivation published")
+        
         except Exception as e:
             print(f"✗ Proximity alert error: {e}")
             self.logger.error(f"Proximity alert error: {e}")
 
-    def handle_sensor_error(self, payload):
-        """Handle sensor malfunction alerts"""
-        try:
-            error_msg = payload.get('error', 'Unknown sensor error')
-            timestamp = payload.get('timestamp', datetime.now().isoformat())
+    # def handle_sensor_error(self, payload):
+    #     """Handle sensor malfunction alerts"""
+    #     try:
+    #         error_msg = payload.get('error', 'Unknown sensor error')
+    #         timestamp = payload.get('timestamp', datetime.now().isoformat())
             
-            print(f"SENSOR ERROR: {error_msg}")  # Immediate console feedback
+    #         print(f"SENSOR ERROR: {error_msg}")  # Immediate console feedback
             
-            # Send high-priority alert to dashboard
-            alert_data = {
-                'timestamp': timestamp,
-                'alert_type': 'SENSOR_MALFUNCTION',
-                'source': 'proximity',
-                'details': error_msg,
-                'priority': 'HIGH'
-            }
+    #         # Send high-priority alert to dashboard
+    #         alert_data = {
+    #             'timestamp': timestamp,
+    #             'alert_type': 'SENSOR_MALFUNCTION',
+    #             'source': 'proximity',
+    #             'details': error_msg,
+    #             'priority': 'HIGH'
+    #         }
             
-            result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=0)
-            print(f"✓ Sensor error alert published")
-            self.logger.error(f"Sensor malfunction reported: {error_msg}")
+    #         result = self.client.publish('nurse/dashboard', json.dumps(alert_data), qos=0)
+    #         print(f"✓ Sensor error alert published")
+    #         self.logger.error(f"Sensor malfunction reported: {error_msg}")
             
-            # Activate video monitoring as backup
-            video_alert = {'activate': True}
-            result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
-            result.wait_for_publish()
-            if result.is_published():
-                print(f"✓ Video activation (due to sensor error) published")
+    #         # Activate video monitoring as backup
+    #         video_alert = {'activate': True}
+    #         result = self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
+    #         result.wait_for_publish()
+    #         if result.is_published():
+    #             print(f"✓ Video activation (due to sensor error) published")
             
-        except Exception as e:
-            print(f"✗ Error handling sensor malfunction: {e}")
-            self.logger.error(f"Failed to process sensor error: {e}")
+    #     except Exception as e:
+    #         print(f"✗ Error handling sensor malfunction: {e}")
+    #         self.logger.error(f"Failed to process sensor error: {e}")
 
     def start(self):
         """Start the Central Hub"""
         try:
+            # Add callbacks BEFORE connecting
             self.client.on_connect = self.on_connect
             self.client.on_message = self.on_message
             self.client.on_disconnect = self.on_disconnect
             
             # Enable MQTT keepalive
-            self.client.keepalive = 60
+            self.client.keepalive = 120
             
-            # Connect with retry using configured delay
-            retry_count = 0
-            while retry_count < 3:
-                try:
-                    self.client.connect(self.broker_address, self.broker_port, 60)
-                    break
-                except Exception as e:
-                    retry_count += 1
-                    self.logger.error(f"Connection attempt {retry_count} failed: {e}")
-                    if retry_count == 3:
-                        raise
-                    time.sleep(self.reconnect_delay)  # Use configured delay instead of hardcoded 5
+            print("Starting Central Hub...")
+            print("Waiting for messages...")
             
+            # Connect and start loop
+            self.client.connect(self.broker_address, self.broker_port, 60)
             self.client.loop_forever()
-            
+        
         except Exception as e:
             self.logger.error(f"Central Hub Error: {e}")
             raise
@@ -336,3 +330,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
