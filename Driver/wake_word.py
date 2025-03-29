@@ -16,7 +16,7 @@ from datetime import datetime
 
 warnings.filterwarnings("ignore", category=UserWarning)
 # Add MQTT Configuration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "192.168.211.254"
 MQTT_PORT = 1883
 MQTT_TOPIC = "audio/emergency"
 
@@ -88,8 +88,8 @@ def send_mqtt_alert(class_id, confidence, detected_phrase=""):
 SAMPLE_RATE = 16000
 DURATION = 1.0  # 1-second audio chunks
 CHUNK_SIZE = int(SAMPLE_RATE * DURATION)
-TFLITE_MODEL_PATH = "../ML/model_quant.tflite"  # Mel spectrogram-based TFLite model
-VOSK_MODEL_PATH = "../ML/vosk-model-small-en-us-0.15"
+TFLITE_MODEL_PATH = "ML/model_quant.tflite"  # Mel spectrogram-based TFLite model
+VOSK_MODEL_PATH = "ML/vosk-model-small-en-us-0.15"
 INPUT_SHAPE = (128, 100)  # Mel spectrogram shape from your first script
 THRESHOLD = 0.5
 COOLDOWN_SECONDS = 10
@@ -193,7 +193,7 @@ def audio_processing_thread():
                         class_label = CLASS_LABELS.get(i, f"Class {i}")
                         print(f"TFLite Detected! Class: {class_label} (Confidence: {score:.2f})")
                         send_mqtt_alert(i, score)
-                        fall_process = subprocess.Popen(["python3", "falldetection.py"])
+                        #fall_process = subprocess.Popen(["python3", "falldetection4.py"])
                         last_trigger_time = current_time
                     tflite_detected = True
                     break
@@ -206,7 +206,7 @@ def audio_processing_thread():
                     if text and any(keyword in text for keyword in KEYWORDS):
                         print(f"Vosk Detected: {text}")
                         send_mqtt_alert(3, 0.75, text)
-                        fall_process = subprocess.Popen(["python3", "falldetection.py"])
+                        #fall_process = subprocess.Popen(["python3", "falldetection4.py"])
                         last_trigger_time = current_time
 
             # Processing time
