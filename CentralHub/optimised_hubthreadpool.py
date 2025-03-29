@@ -9,6 +9,7 @@ import queue
 import gc
 import psutil
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 class OptimizedCentralHub:
     def __init__(self, broker_address='192.168.211.254', broker_port=1883, reconnect_delay=2, publish_retry_delay=1):
@@ -24,7 +25,7 @@ class OptimizedCentralHub:
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s: %(message)s',
-           handlers=[
+            handlers=[
                 logging.handlers.RotatingFileHandler(
                     'Optimised_central_hub.log', 
                     maxBytes=100*1024*1024,  # 100MB file size
@@ -48,57 +49,70 @@ class OptimizedCentralHub:
 
         self.connection_active = False
         
-        # available_memory_mb = psutil.virtual_memory().available / (1024 * 1024)  # MB
-        # self.message_queue = queue.Queue(maxsize=min(200, int(available_memory_mb / 4)))  # Max 200
-        # self.proximity_publish_queue = queue.Queue(maxsize=min(100, int(available_memory_mb / 6)))  # Max 100
-        # self.qos2_publish_queue = queue.Queue(maxsize=min(200, int(available_memory_mb / 4)))  # Max 200
-        # self.logger.info(f"Queue sizes - Message: {self.message_queue.maxsize}, "
-        #                 f"Proximity: {self.proximity_publish_queue.maxsize}, "
-        #                 f"QoS 2: {self.qos2_publish_queue.maxsize}")
+        # Fixed queue sizes (can also be made dynamic if needed)
+        self.message_queue = queue.Queue(maxsize=100)
+        self.proximity_publish_queue = queue.Queue(maxsize=100)
+        self.qos2_publish_queue = queue.Queue(maxsize=100)
 
-        # # Set fixed queue sizes
-        self.message_queue = queue.Queue(maxsize=100)  # Fixed size of 100
-        self.proximity_publish_queue = queue.Queue(maxsize=100)  # Fixed size of 100
-        self.qos2_publish_queue = queue.Queue(maxsize=100)  # Fixed size of 100
-
-        # Log the queue sizes
         self.logger.info(f"Queue sizes - Message: {self.message_queue.maxsize}, "
                         f"Proximity: {self.proximity_publish_queue.maxsize}, "
                         f"QoS 2: {self.qos2_publish_queue.maxsize}")
 
-        
         self.running = False
-        self.worker_thread = None
-        self.publisher_thread = None
-        self.qos2_publisher_thread = None
+        self.executor_message = None
+        self.executor_proximity = None
+        self.executor_qos2 = None
         self.heartbeat_thread = None
 
-    # def recover_qos2_fallback(self):
-    #     """Re-queue QoS 2 messages from fallback log on startup"""
-    #     fallback_file = "qos2_fallback.log"
-    #     if not os.path.exists(fallback_file):
-    #         return
-        
-    #     with open(fallback_file, "r") as f:
-    #         lines = f.readlines()
-        
-    #     for line in lines:
-    #         try:
-    #             timestamp, topic_payload = line.strip().split(" - ", 1)
-    #             topic, payload = topic_payload.split(": ", 1)
-    #             payload = json.loads(payload)
-    #             if self.qos2_publish_queue.qsize() < self.qos2_publish_queue.maxsize:
-    #                 self.qos2_publish_queue.put((topic, payload), block=False)
-    #                 self.logger.info(f"Recovered QoS 2 message from {topic}")
-    #             else:
-    #                 self.logger.warning(f"QoS 2 queue full - cannot recover {topic}")
-    #         except Exception as e:
-    #             self.logger.error(f"Failed to recover QoS 2 message: {e}")
-        
-    #     # Clear the file after recovery
-    #     with open(fallback_file, "w") as f:
-    #         f.write("")
+        # Dynamic thread pool settings
+        self.base_thread_count = max(1, os.cpu_count() // 2)  # Start with half the CPU cores
+        self.max_thread_count = max(4, os.cpu_count())  # Cap at CPU core count or a minimum of 4
+        self.thread_scaling_interval = 10  # Check scaling every 10 seconds
 
+    def adjust_thread_pool(self):
+        """Dynamically adjust the number of threads based on queue sizes and system resources."""
+        def calculate_thread_count(queue_size, max_queue_size, base_count, max_count):
+            load_factor = queue_size / max_queue_size  # How full is the queue?
+            available_memory = psutil.virtual_memory().available / (1024 * 1024)  # MB
+            if available_memory < 100:  # Low memory threshold
+                return base_count  # Scale down to base if memory is low
+            return min(max_count, max(base_count, int(base_count + (load_factor * max_count))))
+
+        # Adjust message processor threads
+        message_threads = calculate_thread_count(
+            self.message_queue.qsize(), self.message_queue.maxsize, self.base_thread_count, self.max_thread_count
+        )
+        if self.executor_message._max_workers != message_threads:
+            self.executor_message._max_workers = message_threads
+            self.logger.info(f"Adjusted message threads to {message_threads}")
+
+        # Adjust proximity publisher threads
+        proximity_threads = calculate_thread_count(
+            self.proximity_publish_queue.qsize(), self.proximity_publish_queue.maxsize, self.base_thread_count, self.max_thread_count
+        )
+        if self.executor_proximity._max_workers != proximity_threads:
+            self.executor_proximity._max_workers = proximity_threads
+            self.logger.info(f"Adjusted proximity threads to {proximity_threads}")
+
+        # Adjust QoS 2 publisher threads
+        qos2_threads = calculate_thread_count(
+            self.qos2_publish_queue.qsize(), self.qos2_publish_queue.maxsize, self.base_thread_count, self.max_thread_count
+        )
+        if self.executor_qos2._max_workers != qos2_threads:
+            self.executor_qos2._max_workers = qos2_threads
+            self.logger.info(f"Adjusted QoS 2 threads to {qos2_threads}")
+
+    def thread_pool_monitor(self):
+        """Periodically monitor and adjust thread pools."""
+        while self.running:
+            try:
+                self.adjust_thread_pool()
+                time.sleep(self.thread_scaling_interval)
+            except Exception as e:
+                self.logger.error(f"Thread pool monitor error: {e}")
+                time.sleep(self.thread_scaling_interval)
+
+    # MQTT callbacks (on_connect, on_disconnect, etc.) remain the same
     def on_connect(self, client, userdata, flags, rc):
         connection_codes = {
             0: "Connected successfully",
@@ -108,23 +122,18 @@ class OptimizedCentralHub:
             4: "Bad username or password",
             5: "Not authorized"
         }
-        
         if rc != 0:
             print(f"Connection failed: {connection_codes.get(rc, 'Unknown error')}")
             self.connection_active = False
             self.logger.error(f"Connection failed: {connection_codes.get(rc, 'Unknown error')}")
             return
-
         print(f"Connected to MQTT Broker: {self.broker_address}")
         self.connection_active = True
         self.logger.info(f"Connected to broker {self.broker_address}")
-        
         for topic in self.topics:
             self.client.publish(topic, "", qos=1, retain=True)
-        
         subscription_list = [(topic, qos) for topic, qos in self.topics.items()]
         result, mid = self.client.subscribe(subscription_list)
-        
         if result == mqtt.MQTT_ERR_SUCCESS:
             print(f"Subscribed to {len(subscription_list)} topics")
             self.logger.info(f"Subscribed to topics: {', '.join(self.topics.keys())}")
@@ -135,7 +144,6 @@ class OptimizedCentralHub:
     def on_disconnect(self, client, userdata, rc):
         disconnect_time = datetime.now().isoformat()
         self.connection_active = False
-        
         if rc != 0:
             print(f"Unexpected disconnection at {disconnect_time}")
             self.logger.warning(f"Unexpected disconnection at {disconnect_time}. Reconnecting...")
@@ -145,9 +153,8 @@ class OptimizedCentralHub:
         attempt = 1
         max_attempts = 10
         max_delay = 60
-        aggressive_attempts = 4  # First 4 attempts are aggressive
-        aggressive_delay = 1   # 1 seconds for aggressive phase
-        
+        aggressive_attempts = 4
+        aggressive_delay = 1
         while not self.connection_active and self.running and attempt <= max_attempts:
             try:
                 self.logger.info(f"Reconnection attempt {attempt}")
@@ -156,11 +163,9 @@ class OptimizedCentralHub:
             except Exception as e:
                 self.logger.error(f"Reconnection attempt {attempt} failed: {e}")
                 if attempt < aggressive_attempts:
-                    # Aggressive phase: fixed short delay
                     delay = aggressive_delay
                 else:
-                    # Exponential phase: backoff starts after aggressive attempts
-                    exp_attempt = attempt - aggressive_attempts  # Adjust for exponential indexing
+                    exp_attempt = attempt - aggressive_attempts
                     delay = min(self.reconnect_delay * (2 ** exp_attempt), max_delay)
                 attempt += 1
                 time.sleep(delay)
@@ -195,72 +200,54 @@ class OptimizedCentralHub:
                 f.write(f"{datetime.now().isoformat()} - {topic}: {json.dumps(payload)}\n")
             return False
 
-    def proximity_publisher_worker(self):
-        while self.running:
+    def proximity_publisher_worker(self, topic, payload, max_retries):
+        success = False
+        for attempt in range(1, max_retries + 1):
             try:
-                topic, payload, max_retries = self.proximity_publish_queue.get(block=True, timeout=1)
-                success = False
-                for attempt in range(1, max_retries + 1):
-                    try:
-                        if not self.connection_active:
-                            time.sleep(self.publish_retry_delay)
-                            continue
-                        result = self.client.publish(topic, json.dumps(payload), qos=1)
-                        if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                            print(f"✓ QoS 1 to {topic} on attempt {attempt}")
-                            success = True
-                            break
-                    except Exception as e:
-                        print(f"✗ QoS 1 attempt {attempt}: {e}")
-                        time.sleep(self.publish_retry_delay)
-                if not success:
-                    self.logger.error(f"QoS 1 failed to {topic} after {max_retries}")
-                self.proximity_publish_queue.task_done()
-            except queue.Empty:
-                continue
+                if not self.connection_active:
+                    time.sleep(self.publish_retry_delay)
+                    continue
+                result = self.client.publish(topic, json.dumps(payload), qos=1)
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    print(f"✓ QoS 1 to {topic} on attempt {attempt}")
+                    success = True
+                    break
             except Exception as e:
-                self.logger.error(f"QoS 1 publisher error: {e}")
-                time.sleep(1)
+                print(f"✗ QoS 1 attempt {attempt}: {e}")
+                time.sleep(self.publish_retry_delay)
+        if not success:
+            self.logger.error(f"QoS 1 failed to {topic} after {max_retries}")
+        self.proximity_publish_queue.task_done()
 
-    def qos2_publisher_worker(self):
-        while self.running:
+    def qos2_publisher_worker(self, topic, payload):
+        for attempt in range(1, 4):
             try:
-                topic, payload = self.qos2_publish_queue.get(block=True, timeout=1)
-                for attempt in range(1, 4):
-                    try:
-                        if not self.connection_active:
-                            time.sleep(1)
-                            continue
-                        start_time = time.time()
-                        result = self.client.publish(topic, json.dumps(payload), qos=2)
-                        latency = (time.time() - start_time) * 1000  # ms
-                        if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                            print(f"✓ QoS 2 to {topic} on attempt {attempt} ({latency:.2f}ms)")
-                            self.logger.info(f"QoS 2 to {topic} ({latency:.2f}ms)")
-                            break
-                        print(f"✗ QoS 2 attempt {attempt}: {result.rc}")
-                        self.logger.error(f"QoS 2 attempt {attempt}: {result.rc}")
-                        time.sleep(1)
-                    except Exception as e:
-                        print(f"✗ QoS 2 attempt {attempt}: {e}")
-                        self.logger.error(f"QoS 2 attempt {attempt}: {e}")
-                        time.sleep(1)
-                else:
-                    self.logger.critical(f"QoS 2 to {topic} failed after 3 retries")
-                self.qos2_publish_queue.task_done()
-            except queue.Empty:
-                continue
-            except Exception as e:
-                self.logger.error(f"QoS 2 worker error: {e}")
+                if not self.connection_active:
+                    time.sleep(1)
+                    continue
+                start_time = time.time()
+                result = self.client.publish(topic, json.dumps(payload), qos=2)
+                latency = (time.time() - start_time) * 1000  # ms
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    print(f"✓ QoS 2 to {topic} on attempt {attempt} ({latency:.2f}ms)")
+                    self.logger.info(f"QoS 2 to {topic} ({latency:.2f}ms)")
+                    break
+                print(f"✗ QoS 2 attempt {attempt}: {result.rc}")
+                self.logger.error(f"QoS 2 attempt {attempt}: {result.rc}")
                 time.sleep(1)
+            except Exception as e:
+                print(f"✗ QoS 2 attempt {attempt}: {e}")
+                self.logger.error(f"QoS 2 attempt {attempt}: {e}")
+                time.sleep(1)
+        else:
+            self.logger.critical(f"QoS 2 to {topic} failed after 3 retries")
+        self.qos2_publish_queue.task_done()
 
     def heartbeat(self):
-        """Publish a heartbeat every 30 seconds to monitor system health"""
         while self.running:
             try:
                 if self.connection_active:
-                    # Dynamic queue sizes based on available memory
-                    available_memory_mb = psutil.virtual_memory().available / (1024 * 1024)  # MB
+                    available_memory_mb = psutil.virtual_memory().available / (1024 * 1024)
                     heartbeat_msg = {
                         'timestamp': datetime.now().isoformat(),
                         'status': 'alive',
@@ -289,56 +276,38 @@ class OptimizedCentralHub:
             print(f"Message queueing error: {e}")
             self.logger.error(f"Message queueing error: {e}")
 
-    def message_processor(self):
-        message_count = 0
-        while self.running:
-            try:
-                message = self.message_queue.get(block=True, timeout=1)
-                start_time = time.time()
-                print(f"Processing {message.topic}")
-                try:
-                    if not message.payload:
-                        self.message_queue.task_done()
-                        continue
-                    payload = json.loads(message.payload.decode('utf-8'))
-                    if message.topic in self.handlers:
-                        self.handlers[message.topic](payload)
-                except json.JSONDecodeError as e:
-                    print(f"✗ JSON decode error: {e}")
-                    self.logger.error(f"JSON decode error on {message.topic}: {e}")
-                except Exception as e:
-                    print(f"Message handling error: {e}")
-                    self.logger.error(f"Message handling error on {message.topic}: {e}")
-                finally:
-                    latency = (time.time() - start_time) * 1000  # ms
-                    self.message_queue.task_done()
-                    message_count += 1
-                    if message_count % 50 == 0:
-                        self.logger.info(f"Processed {message_count} messages, "
-                                       f"CPU: {psutil.cpu_percent()}%, "
-                                       f"Memory: {psutil.virtual_memory().percent}%, "
-                                       f"Last latency: {latency:.2f}ms")
-                    if self.message_queue.qsize() >= 0.8 * self.message_queue.maxsize:
-                        gc.collect()
-            except queue.Empty:
-                continue
-            except Exception as e:
-                self.logger.error(f"Message processor error: {e}")
-                time.sleep(1)
+    def message_processor(self, message):
+        start_time = time.time()
+        print(f"Processing {message.topic}")
+        try:
+            if not message.payload:
+                self.message_queue.task_done()
+                return
+            payload = json.loads(message.payload.decode('utf-8'))
+            if message.topic in self.handlers:
+                self.handlers[message.topic](payload)
+        except json.JSONDecodeError as e:
+            print(f"✗ JSON decode error: {e}")
+            self.logger.error(f"JSON decode error on {message.topic}: {e}")
+        except Exception as e:
+            print(f"Message handling error: {e}")
+            self.logger.error(f"Message handling error on {message.topic}: {e}")
+        finally:
+            latency = (time.time() - start_time) * 1000  # ms
+            self.message_queue.task_done()
+            if self.message_queue.qsize() >= 0.8 * self.message_queue.maxsize:
+                gc.collect()
 
     def handle_audio_alert(self, payload):
         video_alert = {'activate': True}
         self.publish_qos2('video/monitor', video_alert)
-        
         phrase = payload.get('phrase', '')
         alert_type = payload.get('alert_type')
         confidence = payload.get('confidence')
         timestamp = payload.get('timestamp', datetime.now().isoformat())
         source = payload.get('source', 'audio')
-        
         print(f"Audio Alert: {alert_type}")
         priority = 'HIGH' if alert_type in ['Urgent Assistance', 'Pain/Discomfort'] else 'MEDIUM'
-        
         alert_data = {
             'timestamp': timestamp,
             'alert_type': alert_type,
@@ -354,7 +323,6 @@ class OptimizedCentralHub:
         mediapipe_state = payload.get('mediapipe_state')
         timestamp = payload.get('timestamp', datetime.now().isoformat())
         source = payload.get('source', 'video')
-
         print(f"FALL DETECTED: {mediapipe_state}")
         alert_data = {
             'timestamp': timestamp,
@@ -369,10 +337,9 @@ class OptimizedCentralHub:
     def handle_proximity_alert(self, payload):
         try:
             out_of_bed = payload.get('out_of_bed', False)
-            distances = payload.get('distances', [])  
+            distances = payload.get('distances', [])
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'proximity')
-            
             proximity_data = {
                 'timestamp': timestamp,
                 'alert_type': 'PROXIMITY_DATA',
@@ -381,7 +348,6 @@ class OptimizedCentralHub:
                 'priority': 'LOW'
             }
             self.publish_with_retry('nurse/dashboard', proximity_data)
-            
             if out_of_bed:
                 video_alert = {'activate': True}
                 self.publish_qos2('video/monitor', video_alert)
@@ -409,20 +375,44 @@ class OptimizedCentralHub:
             self.client.on_disconnect = self.on_disconnect
             self.client.keepalive = 120
             
-            #self.client.recover_qos2_fallback()
-            
             print("Starting Central Hub...")
             
-            self.worker_thread = threading.Thread(target=self.message_processor, daemon=True)
-            self.worker_thread.start()
-            self.publisher_thread = threading.Thread(target=self.proximity_publisher_worker, daemon=True)
-            self.publisher_thread.start()
-            self.qos2_publisher_thread = threading.Thread(target=self.qos2_publisher_worker, daemon=True)
-            self.qos2_publisher_thread.start()
+            # Initialize thread pools
+            self.executor_message = ThreadPoolExecutor(max_workers=self.base_thread_count)
+            self.executor_proximity = ThreadPoolExecutor(max_workers=self.base_thread_count)
+            self.executor_qos2 = ThreadPoolExecutor(max_workers=self.base_thread_count)
             self.heartbeat_thread = threading.Thread(target=self.heartbeat, daemon=True)
+            self.thread_pool_monitor_thread = threading.Thread(target=self.thread_pool_monitor, daemon=True)
+
+            # Start heartbeat and thread pool monitor
             self.heartbeat_thread.start()
+            self.thread_pool_monitor_thread.start()
+
+            # Submit tasks to thread pools
+            def submit_tasks():
+                while self.running:
+                    try:
+                        # Message processing
+                        message = self.message_queue.get(block=True, timeout=1)
+                        self.executor_message.submit(self.message_processor, message)
+                    except queue.Empty:
+                        pass
+                    try:
+                        # Proximity publishing
+                        topic, payload, max_retries = self.proximity_publish_queue.get(block=True, timeout=1)
+                        self.executor_proximity.submit(self.proximity_publisher_worker, topic, payload, max_retries)
+                    except queue.Empty:
+                        pass
+                    try:
+                        # QoS 2 publishing
+                        topic, payload = self.qos2_publish_queue.get(block=True, timeout=1)
+                        self.executor_qos2.submit(self.qos2_publisher_worker, topic, payload)
+                    except queue.Empty:
+                        pass
+
+            threading.Thread(target=submit_tasks, daemon=True).start()
             
-            print("Worker threads started")
+            print("Thread pools started")
             print("Waiting for messages...")
             
             self.client.connect(self.broker_address, self.broker_port, 60)
@@ -443,9 +433,17 @@ class OptimizedCentralHub:
                 except queue.Empty:
                     break
         
-        for thread in [self.worker_thread, self.publisher_thread, self.qos2_publisher_thread, self.heartbeat_thread]:
-            if thread and thread.is_alive():
-                thread.join(timeout=2)
+        # Shutdown thread pools
+        if self.executor_message:
+            self.executor_message.shutdown(wait=True)
+        if self.executor_proximity:
+            self.executor_proximity.shutdown(wait=True)
+        if self.executor_qos2:
+            self.executor_qos2.shutdown(wait=True)
+        if self.heartbeat_thread and self.heartbeat_thread.is_alive():
+            self.heartbeat_thread.join(timeout=2)
+        if self.thread_pool_monitor_thread and self.thread_pool_monitor_thread.is_alive():
+            self.thread_pool_monitor_thread.join(timeout=2)
         
         if self.client:
             self.client.disconnect()
