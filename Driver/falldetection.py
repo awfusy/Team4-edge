@@ -1,11 +1,17 @@
 import cv2
 import mediapipe as mp
 import math
-from flask import Flask, Response
 import time
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import json
+import socketio
+import base64
+import threading
+
+# WebSocket client setup
+sio = socketio.Client()
+sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server's IP
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -23,13 +29,32 @@ KEYPOINTS = {
 }
 
 # MQTT Configuration
-MQTT_BROKER = "192.168.211.254"
+MQTT_BROKER = "192.168.18.138"
 MQTT_PORT = 1883
 MQTT_TOPIC = "video/emergency"
 
 # Add at the top of the file with other globals
 # SET TO FALSE LATER
 camera_active = True
+
+# Add this function at the beginning of your script
+def exit_after_timeout():
+    time.sleep(300)  # 5 minutes = 300 seconds
+    print("\nTimeout reached (5 minutes). Shutting down gracefully...")
+
+    # Clean up resources
+    if 'cap' in globals() and cap is not None:
+        cap.release()
+    if 'sio' in globals():
+        sio.disconnect()
+    if 'client' in globals():
+        client.disconnect()
+    sys.exit(0)
+
+# Start the timer thread (add this right before your main loop)
+timer_thread = threading.Thread(target=exit_after_timeout)
+timer_thread.daemon = True
+timer_thread.start()
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
@@ -104,7 +129,6 @@ def generate_frames():
 
     while True:
         if camera_active:
-            # Initialize camera if not already done
             if cap is None:
                 cap = cv2.VideoCapture(0)
                 if not cap.isOpened():
@@ -115,119 +139,102 @@ def generate_frames():
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
                 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
                 print("Camera activated")
-            
+
             try:
                 ret, frame = cap.read()
                 if not ret:
                     print("Error: Failed to capture frame")
                     continue
 
-                # Process frame with MediaPipe and OpenCV
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                # Get frame dimensions for drawing the simulated bed
                 height, width = frame.shape[:2]
                 bed_x1, bed_y1 = width // 4, 0
                 bed_x2, bed_y2 = 3 * width // 4, height
-                bed_box = (bed_x1, bed_y1, bed_x2, bed_y2)
 
-                # Draw simulated bed (as a red rectangle)
                 cv2.rectangle(frame, (bed_x1, bed_y1), (bed_x2, bed_y2), (0, 0, 255), 2)
                 cv2.putText(frame, "Bed", (bed_x1, bed_y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                # Process with MediaPipe Pose
                 pose_results = pose.process(rgb_frame)
                 if pose_results.pose_landmarks:
-                    # Draw the pose landmarks on the frame
                     mp_drawing.draw_landmarks(frame, pose_results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-                    # Get the patient state from MediaPipe
                     state_mediapipe = classify_patient_state(pose_results.pose_landmarks.landmark, frame.shape)
 
-                    # Check if the patient is inside the simulated bed based on hips
                     left_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].x * width
                     left_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].y * height
                     right_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].x * width
                     right_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].y * height
 
-                    # If the hips are inside the simulated bed, prevent standing detection
-                    if (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) or (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
+                    if (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) or \
+                       (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
                         if state_mediapipe == "Standing":
-                            state_mediapipe = "Laying Down"  # Change standing to laying down if inside bed
+                            state_mediapipe = "Laying Down"
 
-                    # If the person is "Laying Down" and outside the bed, change state to "Fallen out of bed"
                     if state_mediapipe == "Laying Down":
-                        if not (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) and not (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
+                        if not (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) and \
+                           not (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
                             state_mediapipe = "Fallen out of bed"
 
-                    # Use OpenCV to detect the upper body
-                    state_opencv = "Standing" if detect_upper_body(frame) else "Sitting"  # Basic assumption
+                    state_opencv = "Standing" if detect_upper_body(frame) else "Sitting"
 
-                    # Combine both detections
                     if state_mediapipe == "Laying Down":
                         label = f"status:\nM: {state_mediapipe}\nOCV: N/A"
-                        color = (0, 255, 0)  # Red for laying down (MediaPipe takes priority)
+                        color = (0, 255, 0)
                     elif state_mediapipe == state_opencv:
                         label = f"status:\nM: {state_mediapipe}\nOCV: {state_opencv}"
-                        color = (0, 255, 0)  # Green for both states matching
+                        color = (0, 255, 0)
                     else:
                         label = f"status:\nM: {state_mediapipe}\nOCV: {state_opencv}"
-                        color = (0, 0, 255)  # Red for mismatch
+                        color = (0, 0, 255)
 
-                    # Split the label into lines and add them one by one
                     y_offset = 50
                     for line in label.split('\n'):
                         cv2.putText(frame, line, (50, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-                        y_offset += 20  # Move to the next line
-                    
-                    # Take these for MQTT, send it to the nurse dashboard via MQTT
-                    mqttDataMP = state_mediapipe
-                    mqttDataOCV = state_opencv        
-                    print(mqttDataMP)
-                    print(mqttDataOCV) 
+                        y_offset += 20
 
-                    # Add MQTT publishing here
+                    mqttDataMP = state_mediapipe
+                    mqttDataOCV = state_opencv
+                    print(mqttDataMP)
+                    print(mqttDataOCV)
+
                     mqtt_data = {
                         "timestamp": datetime.now().isoformat(),
                         "mediapipe_state": mqttDataMP,
                         "opencv_state": mqttDataOCV,
                         "source": "video"
                     }
-                    
+
                     try:
                         client.publish(MQTT_TOPIC, json.dumps(mqtt_data), qos=2)
                         print(f"States sent via MQTT: MP={mqttDataMP}, OCV={mqttDataOCV}")
                     except Exception as e:
                         print(f"Failed to send MQTT message: {e}")
-                
-                # Encode and yield frame
-                ret, buffer = cv2.imencode('.jpg', frame)
-                if not ret:
-                    print("Error: Failed to encode frame")
-                    continue
-                frame_bytes = buffer.tobytes()
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+                # Emit frame to WebSocket
+                try:
+                    _, jpeg = cv2.imencode('.jpg', frame)
+                    encoded_frame = base64.b64encode(jpeg).decode('utf-8')
+                    sio.emit('video_frame', encoded_frame)
+                except Exception as e:
+                    print("WebSocket send error:", e)
+                    break
 
             except Exception as e:
                 print(f"Error processing frame: {e}")
                 continue
 
         else:
-            # Deactivate and release camera if it was active
             if cap is not None:
                 cap.release()
+                
+                sio.disconnect()
                 cap = None
                 print("Camera deactivated")
-            time.sleep(1)  # Wait before checking again
+            time.sleep(0.1)
             continue
+            
+if __name__ == "__main__":
+    for _ in generate_frames():
+        pass
 
-# Flask app to serve video stream
-app = Flask(__name__)
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)

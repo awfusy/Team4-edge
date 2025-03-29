@@ -16,7 +16,7 @@ from datetime import datetime
 
 warnings.filterwarnings("ignore", category=UserWarning)
 # Add MQTT Configuration
-MQTT_BROKER = "192.168.211.254"
+MQTT_BROKER = "192.168.18.138"
 MQTT_PORT = 1883
 MQTT_TOPIC = "audio/emergency"
 
@@ -88,8 +88,8 @@ def send_mqtt_alert(class_id, confidence, detected_phrase=""):
 SAMPLE_RATE = 16000
 DURATION = 1.0  # 1-second audio chunks
 CHUNK_SIZE = int(SAMPLE_RATE * DURATION)
-TFLITE_MODEL_PATH = "ML/model_quant.tflite"  # Mel spectrogram-based TFLite model
-VOSK_MODEL_PATH = "ML/vosk-model-small-en-us-0.15"
+TFLITE_MODEL_PATH = "../ML/model_quant.tflite"  # Mel spectrogram-based TFLite model
+VOSK_MODEL_PATH = "../ML/vosk-model-small-en-us-0.15"
 INPUT_SHAPE = (128, 100)  # Mel spectrogram shape from your first script
 THRESHOLD = 0.5
 COOLDOWN_SECONDS = 10
