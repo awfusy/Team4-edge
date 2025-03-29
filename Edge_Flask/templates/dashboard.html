@@ -21,11 +21,11 @@
 
       .dashboard-container {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 3fr 2fr;
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
-      }
+        }
 
       .panel {
         background: white;
@@ -73,10 +73,10 @@
         border-radius: 5px;
       }
 
-      .alert-list {
-        max-height: 400px;
+        .alert-list {
+        max-height: 600px;
         overflow-y: auto;
-      }
+        }
 
       .alert {
         padding: 10px;
@@ -201,12 +201,6 @@
 
       <div class="panel">
         <h2>Recent Alerts</h2>
-        <button
-          onclick="window.location.href='/notifications'"
-          class="refresh-button"
-        >
-          View All Alerts
-        </button>
         <div class="alert-list">
           {% for alert in data.alerts.high_priority %}
           <div class="alert alert-high">
@@ -271,6 +265,25 @@
         stream.style.display = "none";
         placeholder.style.display = "flex";
       });
+
+        socket.on("new_notification", function (data) {
+        const alertBox = document.createElement("div");
+        alertBox.classList.add("alert");
+
+        if (data.priority === "HIGH") {
+            alertBox.classList.add("alert-high");
+        } else if (data.priority === "MEDIUM") {
+            alertBox.classList.add("alert-medium");
+        } else {
+            alertBox.classList.add("alert-low");
+        }
+
+        alertBox.innerHTML = `
+            <pre style="white-space: pre-wrap;">${data.message}</pre>
+        `;
+
+        document.querySelector(".alert-list").prepend(alertBox);
+        });
     </script>
   </body>
 </html>

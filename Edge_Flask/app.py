@@ -11,6 +11,7 @@ import json
 import threading
 import paho.mqtt.client as mqtt  # MQTT temporarily disabled
 import random
+from datetime import datetime
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
@@ -87,27 +88,39 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     try:
-        payload = msg.payload.decode()
-        print(f"📥 MQTT message received on topic '{msg.topic}': {payload}")
-        
-        raw = json.loads(payload)
+        raw = json.loads(msg.payload.decode())
+        print(f"MQTT message received on topic '{msg.topic}': {raw}")
 
-        # Debug individual keys (optional)
-        print("🧾 Parsed JSON content:")
-        for key, value in raw.items():
-            print(f"  {key}: {value}")
+        # Extract details
+        timestamp = raw.get("timestamp", "")
+        alert_type = raw.get("alert_type", "Unknown")
+        source = raw.get("source", "Unknown")
+        details = raw.get("details", "No details provided.")
+        priority = raw.get("priority", "MEDIUM")
 
-        notification = {
-            "name": random.choice(patient_names),
-            "room": random.choice(room_numbers),
-            "priority": raw.get("priority", "MEDIUM"),
-            "condition": raw.get("alert_type", "Unknown"),
-            "in_bed": "No" if "out" in raw.get("alert_type", "").lower() else "Yes",
-            "timestamp": raw.get("timestamp", "")
-        }
-        notifications.append(notification)
-        socketio.emit('new_notification', notification)
-        add_alert(raw)
+        patient_name = random.choice(patient_names)
+        room_no = random.choice(room_numbers)
+        in_bed = "No" if "out" in alert_type.lower() or "fall" in alert_type.lower() else "Yes"
+
+        formatted_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%d %H:%M:%S")
+
+        # Construct final message
+        message = f"""👤 Patient Name: {patient_name}
+🏥 Room No: {room_no}
+⚠️ Emergency Level: {priority}
+alert type: {alert_type}
+🩺 Patient Condition: {details}
+🛏️ Still in Bed: {in_bed}
+{formatted_time}"""
+
+        # Emit to dashboard immediately
+        socketio.emit('new_notification', {
+            "message": message,
+            "priority": priority,
+            "timestamp": formatted_time
+        })
+        print("✅ Notification emitted to frontend")
+
     except Exception as e:
         print("MQTT error:", e)
 
