@@ -1,0 +1,721 @@
+2025-03-29 22:37:45,433 - INFO: Queue sizes - Message: 100, Proximity: 100, QoS 2: 100
+2025-03-29 22:37:50,449 - ERROR: Startup error: timed out
+2025-03-29 22:37:50,450 - ERROR: Fatal error: timed out
+2025-03-29 22:37:54,451 - INFO: Central Hub stopped cleanly
+2025-03-29 22:39:51,598 - INFO: Queue sizes - Message: 100, Proximity: 100, QoS 2: 100
+2025-03-29 22:39:51,605 - INFO: Connected to broker 192.168.18.138
+2025-03-29 22:39:51,606 - INFO: Subscribed to topics: audio/emergency, video/emergency, proximity/alert
+2025-03-29 22:39:51,611 - INFO: Audio Alert: 
+2025-03-29 22:39:52,612 - INFO: QoS 2 to video/monitor (0.33ms)
+2025-03-29 22:39:52,613 - INFO: Audio Alert: 
+2025-03-29 22:39:53,612 - INFO: Audio Alert: 
+2025-03-29 22:39:53,613 - INFO: QoS 2 to nurse/dashboard (1.04ms)
+2025-03-29 22:39:54,613 - INFO: QoS 2 to video/monitor (0.31ms)
+2025-03-29 22:39:56,615 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 22:39:58,619 - INFO: QoS 2 to video/monitor (0.34ms)
+2025-03-29 22:40:00,619 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 22:40:12,631 - INFO: Audio Alert: 
+2025-03-29 22:40:13,627 - INFO: QoS 2 to video/monitor (0.31ms)
+2025-03-29 22:40:15,628 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 22:40:24,629 - INFO: Audio Alert: 
+2025-03-29 22:40:25,629 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 22:40:27,631 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 22:40:36,631 - INFO: Audio Alert: 
+2025-03-29 22:40:37,632 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 22:40:39,632 - INFO: QoS 2 to nurse/dashboard (0.32ms)
+2025-03-29 22:40:48,634 - INFO: Audio Alert: 
+2025-03-29 22:40:49,635 - INFO: QoS 2 to video/monitor (0.70ms)
+2025-03-29 22:40:51,635 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 22:40:58,001 - INFO: Audio Alert: 
+2025-03-29 22:40:59,002 - INFO: QoS 2 to video/monitor (0.27ms)
+2025-03-29 22:41:01,008 - INFO: QoS 2 to nurse/dashboard (0.60ms)
+2025-03-29 22:41:13,022 - INFO: Audio Alert: 
+2025-03-29 22:41:14,025 - INFO: QoS 2 to video/monitor (0.35ms)
+2025-03-29 22:41:16,023 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 22:41:25,027 - INFO: Audio Alert: 
+2025-03-29 22:41:26,028 - INFO: QoS 2 to video/monitor (0.28ms)
+2025-03-29 22:41:28,033 - INFO: QoS 2 to nurse/dashboard (0.95ms)
+2025-03-29 22:41:31,522 - INFO: Fall Alert Sent
+2025-03-29 22:41:32,523 - INFO: Fall Alert Sent
+2025-03-29 22:41:32,523 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 22:41:33,523 - INFO: Fall Alert Sent
+2025-03-29 22:41:33,524 - INFO: QoS 2 to nurse/dashboard (0.95ms)
+2025-03-29 22:41:34,525 - INFO: Fall Alert Sent
+2025-03-29 22:41:34,527 - INFO: QoS 2 to nurse/dashboard (1.85ms)
+2025-03-29 22:41:35,527 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 22:41:35,531 - INFO: Fall Alert Sent
+2025-03-29 22:41:36,527 - INFO: Fall Alert Sent
+2025-03-29 22:41:36,528 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 22:41:37,528 - INFO: Fall Alert Sent
+2025-03-29 22:41:37,528 - INFO: QoS 2 to nurse/dashboard (0.55ms)
+2025-03-29 22:41:38,528 - INFO: Fall Alert Sent
+2025-03-29 22:41:38,529 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 22:41:39,529 - INFO: Fall Alert Sent
+2025-03-29 22:41:39,529 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 22:41:40,529 - INFO: Audio Alert: 
+2025-03-29 22:41:40,529 - INFO: QoS 2 to nurse/dashboard (0.42ms)
+2025-03-29 22:41:41,529 - INFO: Fall Alert Sent
+2025-03-29 22:41:41,529 - INFO: QoS 2 to video/monitor (0.42ms)
+2025-03-29 22:41:42,529 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 22:41:42,530 - INFO: Fall Alert Sent
+2025-03-29 22:41:43,531 - INFO: Fall Alert Sent
+2025-03-29 22:41:43,532 - INFO: QoS 2 to nurse/dashboard (0.47ms)
+2025-03-29 22:41:44,533 - INFO: QoS 2 to nurse/dashboard (0.29ms)
+2025-03-29 22:41:45,096 - INFO: Audio Alert: 
+2025-03-29 22:41:46,095 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 22:41:46,227 - INFO: Fall Alert Sent
+2025-03-29 22:41:47,227 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 22:41:49,233 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 22:41:50,146 - INFO: Fall Alert Sent
+2025-03-29 22:41:51,146 - INFO: QoS 2 to nurse/dashboard (0.47ms)
+2025-03-29 22:41:51,813 - INFO: Fall Alert Sent
+2025-03-29 22:41:52,814 - INFO: QoS 2 to nurse/dashboard (0.27ms)
+2025-03-29 22:41:54,813 - INFO: QoS 2 to nurse/dashboard (0.29ms)
+2025-03-29 22:41:57,814 - INFO: Audio Alert: 
+2025-03-29 22:41:58,815 - INFO: QoS 2 to video/monitor (0.54ms)
+2025-03-29 22:42:00,820 - INFO: QoS 2 to nurse/dashboard (0.69ms)
+2025-03-29 22:42:09,824 - INFO: Audio Alert: 
+2025-03-29 22:42:10,825 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 22:42:12,825 - INFO: QoS 2 to nurse/dashboard (0.30ms)
+2025-03-29 22:42:18,827 - INFO: Audio Alert: 
+2025-03-29 22:42:19,827 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 22:42:21,828 - INFO: QoS 2 to nurse/dashboard (0.59ms)
+2025-03-29 22:42:30,832 - INFO: Audio Alert: 
+2025-03-29 22:42:31,833 - INFO: QoS 2 to video/monitor (0.75ms)
+2025-03-29 22:42:33,834 - INFO: QoS 2 to nurse/dashboard (0.75ms)
+2025-03-29 22:42:36,834 - INFO: Fall Alert Sent
+2025-03-29 22:42:37,840 - INFO: Fall Alert Sent
+2025-03-29 22:42:37,841 - INFO: QoS 2 to nurse/dashboard (5.95ms)
+2025-03-29 22:42:38,837 - INFO: QoS 2 to nurse/dashboard (0.94ms)
+2025-03-29 22:42:38,839 - INFO: Fall Alert Sent
+2025-03-29 22:42:39,839 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 22:42:39,841 - INFO: Fall Alert Sent
+2025-03-29 22:42:40,839 - INFO: QoS 2 to nurse/dashboard (0.20ms)
+2025-03-29 22:42:40,840 - INFO: Fall Alert Sent
+2025-03-29 22:42:41,840 - INFO: QoS 2 to nurse/dashboard (0.58ms)
+2025-03-29 22:42:41,842 - INFO: Fall Alert Sent
+2025-03-29 22:42:42,841 - INFO: QoS 2 to nurse/dashboard (0.67ms)
+2025-03-29 22:42:42,842 - INFO: Fall Alert Sent
+2025-03-29 22:42:43,843 - INFO: Fall Alert Sent
+2025-03-29 22:42:43,844 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 22:42:44,844 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 22:42:44,845 - INFO: Fall Alert Sent
+2025-03-29 22:42:45,848 - INFO: Fall Alert Sent
+2025-03-29 22:42:45,849 - INFO: QoS 2 to nurse/dashboard (0.75ms)
+2025-03-29 22:42:46,847 - INFO: QoS 2 to nurse/dashboard (0.36ms)
+2025-03-29 22:42:46,849 - INFO: Audio Alert: 
+2025-03-29 22:42:47,848 - INFO: Fall Alert Sent
+2025-03-29 22:42:47,849 - INFO: QoS 2 to video/monitor (0.40ms)
+2025-03-29 22:42:48,848 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 22:42:48,849 - INFO: Fall Alert Sent
+2025-03-29 22:42:49,848 - INFO: Fall Alert Sent
+2025-03-29 22:42:49,849 - INFO: QoS 2 to nurse/dashboard (0.91ms)
+2025-03-29 22:42:50,849 - INFO: Fall Alert Sent
+2025-03-29 22:42:50,850 - INFO: QoS 2 to nurse/dashboard (0.63ms)
+2025-03-29 22:42:51,852 - INFO: Fall Alert Sent
+2025-03-29 22:42:51,853 - INFO: QoS 2 to nurse/dashboard (1.69ms)
+2025-03-29 22:42:52,852 - INFO: Fall Alert Sent
+2025-03-29 22:42:52,853 - INFO: QoS 2 to nurse/dashboard (1.06ms)
+2025-03-29 22:42:53,851 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 22:42:53,853 - INFO: Fall Alert Sent
+2025-03-29 22:42:54,855 - INFO: QoS 2 to nurse/dashboard (0.44ms)
+2025-03-29 22:42:54,856 - INFO: Fall Alert Sent
+2025-03-29 22:42:55,855 - INFO: Fall Alert Sent
+2025-03-29 22:42:55,856 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 22:42:56,856 - INFO: Fall Alert Sent
+2025-03-29 22:42:56,857 - INFO: QoS 2 to nurse/dashboard (0.44ms)
+2025-03-29 22:42:57,863 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 22:42:57,864 - INFO: Fall Alert Sent
+2025-03-29 22:42:58,859 - INFO: Fall Alert Sent
+2025-03-29 22:42:58,863 - INFO: QoS 2 to nurse/dashboard (0.54ms)
+2025-03-29 22:42:59,863 - INFO: QoS 2 to nurse/dashboard (2.98ms)
+2025-03-29 22:42:59,864 - INFO: Audio Alert: 
+2025-03-29 22:43:00,863 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 22:43:00,864 - INFO: Fall Alert Sent
+2025-03-29 22:43:01,861 - INFO: Fall Alert Sent
+2025-03-29 22:43:01,863 - INFO: QoS 2 to video/monitor (2.69ms)
+2025-03-29 22:43:02,870 - INFO: Fall Alert Sent
+2025-03-29 22:43:02,871 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 22:43:03,862 - INFO: Fall Alert Sent
+2025-03-29 22:43:03,864 - INFO: QoS 2 to nurse/dashboard (1.08ms)
+2025-03-29 22:43:04,867 - INFO: Fall Alert Sent
+2025-03-29 22:43:04,871 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 22:43:05,869 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 22:43:05,869 - INFO: Audio Alert: 
+2025-03-29 22:43:06,872 - INFO: Fall Alert Sent
+2025-03-29 22:43:06,876 - INFO: QoS 2 to nurse/dashboard (5.80ms)
+2025-03-29 22:43:07,869 - INFO: QoS 2 to nurse/dashboard (0.55ms)
+2025-03-29 22:43:07,871 - INFO: Fall Alert Sent
+2025-03-29 22:43:08,869 - INFO: QoS 2 to video/monitor (0.45ms)
+2025-03-29 22:43:10,872 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 22:43:12,874 - INFO: QoS 2 to nurse/dashboard (0.77ms)
+2025-03-29 22:43:14,878 - INFO: QoS 2 to nurse/dashboard (2.26ms)
+2025-03-29 22:43:15,054 - INFO: Audio Alert: 
+2025-03-29 22:43:16,059 - INFO: QoS 2 to video/monitor (0.62ms)
+2025-03-29 22:43:18,058 - INFO: QoS 2 to nurse/dashboard (1.05ms)
+2025-03-29 22:43:27,059 - INFO: Audio Alert: 
+2025-03-29 22:43:28,060 - INFO: QoS 2 to video/monitor (0.37ms)
+2025-03-29 22:43:30,062 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 22:43:36,066 - INFO: Audio Alert: 
+2025-03-29 22:43:37,067 - INFO: QoS 2 to video/monitor (0.32ms)
+2025-03-29 22:43:39,068 - INFO: QoS 2 to nurse/dashboard (0.91ms)
+2025-03-29 22:43:48,078 - INFO: Audio Alert: 
+2025-03-29 22:43:49,075 - INFO: Fall Alert Sent
+2025-03-29 22:43:49,083 - INFO: QoS 2 to video/monitor (0.33ms)
+2025-03-29 22:43:50,080 - INFO: QoS 2 to nurse/dashboard (1.00ms)
+2025-03-29 22:43:52,078 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 22:43:58,147 - INFO: Shutting down via interrupt...
+2025-03-29 23:22:55,401 - INFO: Queue sizes - Message: 100, Proximity: 100, QoS 2: 100
+2025-03-29 23:22:55,410 - INFO: Connected to broker 192.168.18.138
+2025-03-29 23:22:55,411 - INFO: Subscribed to topics: audio/emergency, video/emergency, proximity/alert
+2025-03-29 23:23:22,413 - INFO: Audio Alert: 
+2025-03-29 23:23:23,414 - INFO: QoS 2 to video/monitor (0.34ms)
+2025-03-29 23:23:25,416 - INFO: QoS 2 to nurse/dashboard (0.48ms)
+2025-03-29 23:23:31,424 - INFO: Fall Alert Sent
+2025-03-29 23:23:32,424 - INFO: QoS 2 to nurse/dashboard (1.35ms)
+2025-03-29 23:23:32,426 - INFO: Fall Alert Sent
+2025-03-29 23:23:33,423 - INFO: QoS 2 to nurse/dashboard (0.59ms)
+2025-03-29 23:23:36,426 - INFO: Fall Alert Sent
+2025-03-29 23:23:37,431 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:23:37,434 - INFO: Fall Alert Sent
+2025-03-29 23:23:38,431 - INFO: Fall Alert Sent
+2025-03-29 23:23:38,432 - INFO: QoS 2 to nurse/dashboard (0.78ms)
+2025-03-29 23:23:39,431 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 23:23:42,434 - INFO: Fall Alert Sent
+2025-03-29 23:23:43,434 - INFO: Fall Alert Sent
+2025-03-29 23:23:43,435 - INFO: QoS 2 to nurse/dashboard (0.55ms)
+2025-03-29 23:23:44,440 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:24:02,456 - INFO: Fall Alert Sent
+2025-03-29 23:24:03,458 - INFO: QoS 2 to nurse/dashboard (0.44ms)
+2025-03-29 23:24:03,458 - INFO: Fall Alert Sent
+2025-03-29 23:24:04,458 - INFO: QoS 2 to nurse/dashboard (0.60ms)
+2025-03-29 23:24:04,459 - INFO: Fall Alert Sent
+2025-03-29 23:24:05,458 - INFO: Fall Alert Sent
+2025-03-29 23:24:05,460 - INFO: QoS 2 to nurse/dashboard (0.77ms)
+2025-03-29 23:24:06,459 - INFO: Fall Alert Sent
+2025-03-29 23:24:06,459 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:24:07,459 - INFO: Fall Alert Sent
+2025-03-29 23:24:07,461 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:24:08,459 - INFO: Fall Alert Sent
+2025-03-29 23:24:08,460 - INFO: QoS 2 to nurse/dashboard (1.02ms)
+2025-03-29 23:24:09,460 - INFO: Fall Alert Sent
+2025-03-29 23:24:09,462 - INFO: QoS 2 to nurse/dashboard (3.00ms)
+2025-03-29 23:24:10,460 - INFO: Fall Alert Sent
+2025-03-29 23:24:10,461 - INFO: QoS 2 to nurse/dashboard (0.53ms)
+2025-03-29 23:24:11,461 - INFO: Fall Alert Sent
+2025-03-29 23:24:11,461 - INFO: QoS 2 to nurse/dashboard (0.61ms)
+2025-03-29 23:24:12,463 - INFO: Fall Alert Sent
+2025-03-29 23:24:12,467 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:24:13,463 - INFO: Fall Alert Sent
+2025-03-29 23:24:13,464 - INFO: QoS 2 to nurse/dashboard (0.62ms)
+2025-03-29 23:24:14,464 - INFO: Fall Alert Sent
+2025-03-29 23:24:14,466 - INFO: QoS 2 to nurse/dashboard (0.53ms)
+2025-03-29 23:24:15,467 - INFO: Fall Alert Sent
+2025-03-29 23:24:15,472 - INFO: QoS 2 to nurse/dashboard (5.00ms)
+2025-03-29 23:24:16,467 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 23:24:16,467 - INFO: Fall Alert Sent
+2025-03-29 23:24:17,475 - INFO: Fall Alert Sent
+2025-03-29 23:24:17,478 - INFO: QoS 2 to nurse/dashboard (0.61ms)
+2025-03-29 23:24:18,474 - INFO: QoS 2 to nurse/dashboard (0.30ms)
+2025-03-29 23:24:25,505 - INFO: Shutting down via interrupt...
+2025-03-29 23:24:29,512 - INFO: Central Hub stopped cleanly
+2025-03-29 23:24:43,845 - INFO: Queue sizes - Message: 100, Proximity: 100, QoS 2: 100
+2025-03-29 23:24:43,856 - INFO: Connected to broker 192.168.18.138
+2025-03-29 23:24:43,857 - INFO: Subscribed to topics: audio/emergency, video/emergency, proximity/alert
+2025-03-29 23:24:49,867 - INFO: Fall Alert Sent
+2025-03-29 23:24:50,872 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:25:03,233 - INFO: Fall Alert Sent
+2025-03-29 23:25:04,241 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:25:04,333 - INFO: Fall Alert Sent
+2025-03-29 23:25:05,334 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:25:05,336 - INFO: Fall Alert Sent
+2025-03-29 23:25:06,335 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:25:06,339 - INFO: Fall Alert Sent
+2025-03-29 23:25:07,335 - INFO: Fall Alert Sent
+2025-03-29 23:25:07,335 - INFO: QoS 2 to nurse/dashboard (0.64ms)
+2025-03-29 23:25:08,340 - INFO: QoS 2 to nurse/dashboard (2.11ms)
+2025-03-29 23:25:08,341 - INFO: Fall Alert Sent
+2025-03-29 23:25:09,339 - INFO: Fall Alert Sent
+2025-03-29 23:25:09,344 - INFO: QoS 2 to nurse/dashboard (1.39ms)
+2025-03-29 23:25:10,340 - INFO: Fall Alert Sent
+2025-03-29 23:25:10,341 - INFO: QoS 2 to nurse/dashboard (0.62ms)
+2025-03-29 23:25:11,341 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:25:11,343 - INFO: Fall Alert Sent
+2025-03-29 23:25:12,344 - INFO: QoS 2 to nurse/dashboard (0.50ms)
+2025-03-29 23:25:27,355 - INFO: Fall Alert Sent
+2025-03-29 23:25:28,356 - INFO: Fall Alert Sent
+2025-03-29 23:25:28,359 - INFO: QoS 2 to nurse/dashboard (0.73ms)
+2025-03-29 23:25:29,356 - INFO: QoS 2 to nurse/dashboard (0.72ms)
+2025-03-29 23:25:29,357 - INFO: Fall Alert Sent
+2025-03-29 23:25:30,358 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 23:27:48,444 - INFO: Audio Alert: 
+2025-03-29 23:27:49,446 - INFO: QoS 2 to video/monitor (0.30ms)
+2025-03-29 23:27:51,447 - INFO: QoS 2 to nurse/dashboard (0.90ms)
+2025-03-29 23:27:57,455 - INFO: Fall Alert Sent
+2025-03-29 23:27:58,456 - INFO: Fall Alert Sent
+2025-03-29 23:27:58,458 - INFO: QoS 2 to nurse/dashboard (1.23ms)
+2025-03-29 23:27:59,456 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:27:59,457 - INFO: Fall Alert Sent
+2025-03-29 23:28:00,460 - INFO: Fall Alert Sent
+2025-03-29 23:28:00,460 - INFO: QoS 2 to nurse/dashboard (1.65ms)
+2025-03-29 23:28:01,463 - INFO: Fall Alert Sent
+2025-03-29 23:28:01,467 - INFO: QoS 2 to nurse/dashboard (0.44ms)
+2025-03-29 23:28:02,465 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:28:02,465 - INFO: Fall Alert Sent
+2025-03-29 23:28:03,467 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 23:28:12,472 - INFO: Fall Alert Sent
+2025-03-29 23:28:13,473 - INFO: Fall Alert Sent
+2025-03-29 23:28:13,474 - INFO: QoS 2 to nurse/dashboard (1.31ms)
+2025-03-29 23:28:14,477 - INFO: QoS 2 to nurse/dashboard (1.82ms)
+2025-03-29 23:28:14,478 - INFO: Fall Alert Sent
+2025-03-29 23:28:15,479 - INFO: Fall Alert Sent
+2025-03-29 23:28:15,480 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 23:28:16,479 - INFO: Fall Alert Sent
+2025-03-29 23:28:16,480 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:28:17,479 - INFO: Fall Alert Sent
+2025-03-29 23:28:17,480 - INFO: QoS 2 to nurse/dashboard (0.28ms)
+2025-03-29 23:28:18,483 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 23:28:18,484 - INFO: Fall Alert Sent
+2025-03-29 23:28:19,481 - INFO: Fall Alert Sent
+2025-03-29 23:28:19,481 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 23:28:20,481 - INFO: Fall Alert Sent
+2025-03-29 23:28:20,483 - INFO: QoS 2 to nurse/dashboard (0.48ms)
+2025-03-29 23:28:21,486 - INFO: QoS 2 to nurse/dashboard (0.28ms)
+2025-03-29 23:28:27,491 - INFO: Fall Alert Sent
+2025-03-29 23:28:28,493 - INFO: Fall Alert Sent
+2025-03-29 23:28:28,494 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:28:29,495 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:28:41,504 - INFO: Fall Alert Sent
+2025-03-29 23:28:42,510 - INFO: QoS 2 to nurse/dashboard (0.36ms)
+2025-03-29 23:28:42,511 - INFO: Fall Alert Sent
+2025-03-29 23:28:43,510 - INFO: Fall Alert Sent
+2025-03-29 23:28:43,514 - INFO: QoS 2 to nurse/dashboard (0.61ms)
+2025-03-29 23:28:44,514 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:28:44,516 - INFO: Fall Alert Sent
+2025-03-29 23:28:45,512 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:28:45,513 - INFO: Fall Alert Sent
+2025-03-29 23:28:46,512 - INFO: QoS 2 to nurse/dashboard (0.50ms)
+2025-03-29 23:29:10,751 - INFO: Fall Alert Sent
+2025-03-29 23:29:11,755 - INFO: QoS 2 to nurse/dashboard (0.37ms)
+2025-03-29 23:31:35,820 - INFO: Audio Alert: 
+2025-03-29 23:31:36,820 - INFO: QoS 2 to video/monitor (0.30ms)
+2025-03-29 23:31:38,823 - INFO: QoS 2 to nurse/dashboard (0.32ms)
+2025-03-29 23:31:41,827 - INFO: Fall Alert Sent
+2025-03-29 23:31:42,828 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:31:42,828 - INFO: Fall Alert Sent
+2025-03-29 23:31:43,829 - INFO: Fall Alert Sent
+2025-03-29 23:31:43,830 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 23:31:44,831 - INFO: QoS 2 to nurse/dashboard (1.08ms)
+2025-03-29 23:31:44,833 - INFO: Fall Alert Sent
+2025-03-29 23:31:45,831 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:31:45,831 - INFO: Fall Alert Sent
+2025-03-29 23:31:46,833 - INFO: QoS 2 to nurse/dashboard (0.72ms)
+2025-03-29 23:31:46,835 - INFO: Fall Alert Sent
+2025-03-29 23:31:47,835 - INFO: Fall Alert Sent
+2025-03-29 23:31:47,836 - INFO: QoS 2 to nurse/dashboard (1.50ms)
+2025-03-29 23:31:48,839 - INFO: QoS 2 to nurse/dashboard (0.32ms)
+2025-03-29 23:31:48,843 - INFO: Fall Alert Sent
+2025-03-29 23:31:49,840 - INFO: Fall Alert Sent
+2025-03-29 23:31:49,840 - INFO: QoS 2 to nurse/dashboard (0.42ms)
+2025-03-29 23:31:50,842 - INFO: Fall Alert Sent
+2025-03-29 23:31:50,843 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:31:51,843 - INFO: Fall Alert Sent
+2025-03-29 23:31:51,844 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:31:52,844 - INFO: QoS 2 to nurse/dashboard (0.69ms)
+2025-03-29 23:32:07,860 - INFO: Fall Alert Sent
+2025-03-29 23:32:08,860 - INFO: Fall Alert Sent
+2025-03-29 23:32:08,861 - INFO: QoS 2 to nurse/dashboard (0.46ms)
+2025-03-29 23:32:09,860 - INFO: Fall Alert Sent
+2025-03-29 23:32:09,860 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:32:10,862 - INFO: Fall Alert Sent
+2025-03-29 23:32:10,862 - INFO: QoS 2 to nurse/dashboard (0.62ms)
+2025-03-29 23:32:11,861 - INFO: Fall Alert Sent
+2025-03-29 23:32:11,862 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:32:12,862 - INFO: QoS 2 to nurse/dashboard (0.29ms)
+2025-03-29 23:32:12,862 - INFO: Fall Alert Sent
+2025-03-29 23:32:13,862 - INFO: QoS 2 to nurse/dashboard (0.28ms)
+2025-03-29 23:32:34,866 - INFO: Audio Alert: 
+2025-03-29 23:32:35,866 - INFO: QoS 2 to video/monitor (0.30ms)
+2025-03-29 23:32:37,867 - INFO: QoS 2 to nurse/dashboard (0.33ms)
+2025-03-29 23:33:10,884 - INFO: Audio Alert: 
+2025-03-29 23:33:11,884 - INFO: QoS 2 to video/monitor (0.29ms)
+2025-03-29 23:33:13,886 - INFO: QoS 2 to nurse/dashboard (0.30ms)
+2025-03-29 23:33:25,900 - INFO: Fall Alert Sent
+2025-03-29 23:33:26,903 - INFO: QoS 2 to nurse/dashboard (0.33ms)
+2025-03-29 23:33:26,904 - INFO: Fall Alert Sent
+2025-03-29 23:33:27,903 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:33:36,906 - INFO: Fall Alert Sent
+2025-03-29 23:33:37,908 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:33:37,917 - INFO: Fall Alert Sent
+2025-03-29 23:33:38,907 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:33:38,908 - INFO: Fall Alert Sent
+2025-03-29 23:33:39,911 - INFO: QoS 2 to nurse/dashboard (0.57ms)
+2025-03-29 23:33:39,912 - INFO: Fall Alert Sent
+2025-03-29 23:33:40,912 - INFO: QoS 2 to nurse/dashboard (0.79ms)
+2025-03-29 23:33:40,913 - INFO: Fall Alert Sent
+2025-03-29 23:33:41,911 - INFO: QoS 2 to nurse/dashboard (0.81ms)
+2025-03-29 23:33:47,920 - INFO: Fall Alert Sent
+2025-03-29 23:33:48,920 - INFO: Fall Alert Sent
+2025-03-29 23:33:48,922 - INFO: QoS 2 to nurse/dashboard (0.53ms)
+2025-03-29 23:33:49,921 - INFO: Fall Alert Sent
+2025-03-29 23:33:49,921 - INFO: QoS 2 to nurse/dashboard (0.80ms)
+2025-03-29 23:33:50,923 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:33:50,926 - INFO: Fall Alert Sent
+2025-03-29 23:33:51,925 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 23:33:54,927 - INFO: Fall Alert Sent
+2025-03-29 23:33:55,926 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:34:04,934 - INFO: Fall Alert Sent
+2025-03-29 23:34:05,935 - INFO: Fall Alert Sent
+2025-03-29 23:34:05,940 - INFO: QoS 2 to nurse/dashboard (4.57ms)
+2025-03-29 23:34:06,936 - INFO: QoS 2 to nurse/dashboard (0.64ms)
+2025-03-29 23:34:09,939 - INFO: Fall Alert Sent
+2025-03-29 23:34:10,940 - INFO: Fall Alert Sent
+2025-03-29 23:34:10,940 - INFO: QoS 2 to nurse/dashboard (0.85ms)
+2025-03-29 23:34:11,946 - INFO: QoS 2 to nurse/dashboard (0.58ms)
+2025-03-29 23:34:17,948 - INFO: Fall Alert Sent
+2025-03-29 23:34:18,949 - INFO: Fall Alert Sent
+2025-03-29 23:34:18,952 - INFO: QoS 2 to nurse/dashboard (1.97ms)
+2025-03-29 23:34:19,950 - INFO: Fall Alert Sent
+2025-03-29 23:34:19,951 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 23:34:20,955 - INFO: QoS 2 to nurse/dashboard (0.62ms)
+2025-03-29 23:34:20,956 - INFO: Fall Alert Sent
+2025-03-29 23:34:21,953 - INFO: QoS 2 to nurse/dashboard (0.64ms)
+2025-03-29 23:34:31,151 - INFO: Fall Alert Sent
+2025-03-29 23:34:32,151 - INFO: Fall Alert Sent
+2025-03-29 23:34:32,151 - INFO: QoS 2 to nurse/dashboard (1.00ms)
+2025-03-29 23:34:33,152 - INFO: QoS 2 to nurse/dashboard (0.47ms)
+2025-03-29 23:34:33,152 - INFO: Fall Alert Sent
+2025-03-29 23:34:34,155 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:34:34,159 - INFO: Fall Alert Sent
+2025-03-29 23:34:35,155 - INFO: Fall Alert Sent
+2025-03-29 23:34:35,156 - INFO: QoS 2 to nurse/dashboard (0.42ms)
+2025-03-29 23:34:36,157 - INFO: Fall Alert Sent
+2025-03-29 23:34:36,158 - INFO: QoS 2 to nurse/dashboard (0.79ms)
+2025-03-29 23:34:37,157 - INFO: QoS 2 to nurse/dashboard (0.70ms)
+2025-03-29 23:34:37,159 - INFO: Fall Alert Sent
+2025-03-29 23:34:38,157 - INFO: QoS 2 to nurse/dashboard (0.36ms)
+2025-03-29 23:34:38,161 - INFO: Fall Alert Sent
+2025-03-29 23:34:39,157 - INFO: Fall Alert Sent
+2025-03-29 23:34:39,160 - INFO: QoS 2 to nurse/dashboard (0.86ms)
+2025-03-29 23:34:40,158 - INFO: Fall Alert Sent
+2025-03-29 23:34:40,158 - INFO: QoS 2 to nurse/dashboard (1.13ms)
+2025-03-29 23:34:41,158 - INFO: Fall Alert Sent
+2025-03-29 23:34:41,158 - INFO: QoS 2 to nurse/dashboard (0.55ms)
+2025-03-29 23:34:42,162 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:34:42,167 - INFO: Fall Alert Sent
+2025-03-29 23:34:43,164 - INFO: Fall Alert Sent
+2025-03-29 23:34:43,171 - INFO: QoS 2 to nurse/dashboard (0.94ms)
+2025-03-29 23:34:44,162 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:34:44,166 - INFO: Fall Alert Sent
+2025-03-29 23:34:45,163 - INFO: Fall Alert Sent
+2025-03-29 23:34:45,163 - INFO: QoS 2 to nurse/dashboard (0.63ms)
+2025-03-29 23:34:46,178 - INFO: QoS 2 to nurse/dashboard (1.64ms)
+2025-03-29 23:34:46,185 - INFO: Fall Alert Sent
+2025-03-29 23:34:47,171 - INFO: Fall Alert Sent
+2025-03-29 23:34:47,174 - INFO: QoS 2 to nurse/dashboard (1.14ms)
+2025-03-29 23:34:48,175 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:34:48,176 - INFO: Fall Alert Sent
+2025-03-29 23:34:49,174 - INFO: QoS 2 to nurse/dashboard (0.67ms)
+2025-03-29 23:34:49,175 - INFO: Fall Alert Sent
+2025-03-29 23:34:50,174 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 23:34:50,174 - INFO: Fall Alert Sent
+2025-03-29 23:34:51,178 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:34:51,180 - INFO: Fall Alert Sent
+2025-03-29 23:34:52,175 - INFO: Fall Alert Sent
+2025-03-29 23:34:52,175 - INFO: QoS 2 to nurse/dashboard (0.76ms)
+2025-03-29 23:34:53,175 - INFO: Fall Alert Sent
+2025-03-29 23:34:53,176 - INFO: QoS 2 to nurse/dashboard (0.80ms)
+2025-03-29 23:34:54,176 - INFO: Fall Alert Sent
+2025-03-29 23:34:54,177 - INFO: QoS 2 to nurse/dashboard (0.72ms)
+2025-03-29 23:34:55,176 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:34:55,177 - INFO: Fall Alert Sent
+2025-03-29 23:34:56,178 - INFO: Fall Alert Sent
+2025-03-29 23:34:56,179 - INFO: QoS 2 to nurse/dashboard (1.20ms)
+2025-03-29 23:34:57,181 - INFO: QoS 2 to nurse/dashboard (0.67ms)
+2025-03-29 23:34:57,183 - INFO: Fall Alert Sent
+2025-03-29 23:34:58,182 - INFO: QoS 2 to nurse/dashboard (1.25ms)
+2025-03-29 23:34:58,185 - INFO: Fall Alert Sent
+2025-03-29 23:34:59,184 - INFO: QoS 2 to nurse/dashboard (1.01ms)
+2025-03-29 23:34:59,187 - INFO: Fall Alert Sent
+2025-03-29 23:35:00,182 - INFO: Fall Alert Sent
+2025-03-29 23:35:00,182 - INFO: QoS 2 to nurse/dashboard (0.68ms)
+2025-03-29 23:35:01,183 - INFO: Fall Alert Sent
+2025-03-29 23:35:01,188 - INFO: QoS 2 to nurse/dashboard (3.69ms)
+2025-03-29 23:35:02,185 - INFO: QoS 2 to nurse/dashboard (0.48ms)
+2025-03-29 23:35:02,187 - INFO: Fall Alert Sent
+2025-03-29 23:35:03,186 - INFO: Fall Alert Sent
+2025-03-29 23:35:03,186 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 23:35:04,187 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:35:04,189 - INFO: Fall Alert Sent
+2025-03-29 23:35:05,192 - INFO: QoS 2 to nurse/dashboard (0.69ms)
+2025-03-29 23:35:05,197 - INFO: Fall Alert Sent
+2025-03-29 23:35:06,191 - INFO: Fall Alert Sent
+2025-03-29 23:35:06,192 - INFO: QoS 2 to nurse/dashboard (0.69ms)
+2025-03-29 23:35:07,195 - INFO: Fall Alert Sent
+2025-03-29 23:35:07,199 - INFO: QoS 2 to nurse/dashboard (3.36ms)
+2025-03-29 23:35:08,195 - INFO: Fall Alert Sent
+2025-03-29 23:35:08,197 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:35:09,198 - INFO: Fall Alert Sent
+2025-03-29 23:35:09,199 - INFO: QoS 2 to nurse/dashboard (1.84ms)
+2025-03-29 23:35:10,197 - INFO: Fall Alert Sent
+2025-03-29 23:35:10,198 - INFO: QoS 2 to nurse/dashboard (1.06ms)
+2025-03-29 23:35:11,200 - INFO: Fall Alert Sent
+2025-03-29 23:35:11,203 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:35:12,203 - INFO: QoS 2 to nurse/dashboard (0.31ms)
+2025-03-29 23:35:12,204 - INFO: Fall Alert Sent
+2025-03-29 23:35:13,203 - INFO: Fall Alert Sent
+2025-03-29 23:35:13,204 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:35:14,203 - INFO: Fall Alert Sent
+2025-03-29 23:35:14,204 - INFO: QoS 2 to nurse/dashboard (0.33ms)
+2025-03-29 23:35:15,205 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:35:15,207 - INFO: Fall Alert Sent
+2025-03-29 23:35:16,204 - INFO: Fall Alert Sent
+2025-03-29 23:35:16,207 - INFO: QoS 2 to nurse/dashboard (0.33ms)
+2025-03-29 23:35:17,208 - INFO: QoS 2 to nurse/dashboard (0.55ms)
+2025-03-29 23:35:17,209 - INFO: Fall Alert Sent
+2025-03-29 23:35:18,208 - INFO: QoS 2 to nurse/dashboard (0.32ms)
+2025-03-29 23:35:18,208 - INFO: Fall Alert Sent
+2025-03-29 23:35:19,212 - INFO: QoS 2 to nurse/dashboard (0.71ms)
+2025-03-29 23:35:19,216 - INFO: Fall Alert Sent
+2025-03-29 23:35:20,216 - INFO: Fall Alert Sent
+2025-03-29 23:35:20,219 - INFO: QoS 2 to nurse/dashboard (0.81ms)
+2025-03-29 23:35:21,212 - INFO: Fall Alert Sent
+2025-03-29 23:35:21,215 - INFO: QoS 2 to nurse/dashboard (0.37ms)
+2025-03-29 23:35:22,213 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:35:22,214 - INFO: Fall Alert Sent
+2025-03-29 23:35:23,213 - INFO: QoS 2 to nurse/dashboard (0.58ms)
+2025-03-29 23:36:02,260 - INFO: Fall Alert Sent
+2025-03-29 23:36:03,254 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:36:03,259 - INFO: Fall Alert Sent
+2025-03-29 23:36:04,255 - INFO: Fall Alert Sent
+2025-03-29 23:36:04,256 - INFO: QoS 2 to nurse/dashboard (0.91ms)
+2025-03-29 23:36:05,255 - INFO: Fall Alert Sent
+2025-03-29 23:36:05,259 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:36:06,255 - INFO: Fall Alert Sent
+2025-03-29 23:36:06,256 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:36:07,259 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 23:36:07,263 - INFO: Fall Alert Sent
+2025-03-29 23:36:08,259 - INFO: Fall Alert Sent
+2025-03-29 23:36:08,262 - INFO: QoS 2 to nurse/dashboard (1.05ms)
+2025-03-29 23:36:09,262 - INFO: Fall Alert Sent
+2025-03-29 23:36:09,263 - INFO: QoS 2 to nurse/dashboard (0.59ms)
+2025-03-29 23:36:10,267 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 23:36:10,271 - INFO: Fall Alert Sent
+2025-03-29 23:36:11,263 - INFO: QoS 2 to nurse/dashboard (0.57ms)
+2025-03-29 23:36:11,263 - INFO: Fall Alert Sent
+2025-03-29 23:36:12,263 - INFO: Fall Alert Sent
+2025-03-29 23:36:12,264 - INFO: QoS 2 to nurse/dashboard (0.35ms)
+2025-03-29 23:36:13,265 - INFO: Fall Alert Sent
+2025-03-29 23:36:13,268 - INFO: QoS 2 to nurse/dashboard (0.48ms)
+2025-03-29 23:36:14,279 - INFO: QoS 2 to nurse/dashboard (1.02ms)
+2025-03-29 23:36:14,280 - INFO: Fall Alert Sent
+2025-03-29 23:36:15,272 - INFO: Fall Alert Sent
+2025-03-29 23:36:15,272 - INFO: QoS 2 to nurse/dashboard (0.77ms)
+2025-03-29 23:36:16,273 - INFO: Fall Alert Sent
+2025-03-29 23:36:16,276 - INFO: QoS 2 to nurse/dashboard (2.15ms)
+2025-03-29 23:36:17,275 - INFO: Fall Alert Sent
+2025-03-29 23:36:17,277 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:36:18,276 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 23:36:18,277 - INFO: Fall Alert Sent
+2025-03-29 23:36:19,277 - INFO: QoS 2 to nurse/dashboard (0.60ms)
+2025-03-29 23:36:19,284 - INFO: Fall Alert Sent
+2025-03-29 23:36:20,277 - INFO: QoS 2 to nurse/dashboard (0.36ms)
+2025-03-29 23:36:20,278 - INFO: Fall Alert Sent
+2025-03-29 23:36:21,283 - INFO: Fall Alert Sent
+2025-03-29 23:36:21,284 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:36:22,283 - INFO: Fall Alert Sent
+2025-03-29 23:36:22,290 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:36:23,285 - INFO: QoS 2 to nurse/dashboard (0.85ms)
+2025-03-29 23:36:23,289 - INFO: Fall Alert Sent
+2025-03-29 23:36:24,289 - INFO: Fall Alert Sent
+2025-03-29 23:36:24,289 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:36:25,290 - INFO: Fall Alert Sent
+2025-03-29 23:36:25,291 - INFO: QoS 2 to nurse/dashboard (0.65ms)
+2025-03-29 23:36:26,297 - INFO: QoS 2 to nurse/dashboard (2.40ms)
+2025-03-29 23:36:26,302 - INFO: Fall Alert Sent
+2025-03-29 23:36:27,299 - INFO: QoS 2 to nurse/dashboard (6.37ms)
+2025-03-29 23:36:27,301 - INFO: Fall Alert Sent
+2025-03-29 23:36:28,293 - INFO: Fall Alert Sent
+2025-03-29 23:36:28,295 - INFO: QoS 2 to nurse/dashboard (2.22ms)
+2025-03-29 23:36:29,300 - INFO: QoS 2 to nurse/dashboard (0.92ms)
+2025-03-29 23:36:29,301 - INFO: Fall Alert Sent
+2025-03-29 23:36:30,297 - INFO: Fall Alert Sent
+2025-03-29 23:36:30,299 - INFO: QoS 2 to nurse/dashboard (2.25ms)
+2025-03-29 23:36:31,299 - INFO: Fall Alert Sent
+2025-03-29 23:36:31,301 - INFO: QoS 2 to nurse/dashboard (0.46ms)
+2025-03-29 23:36:32,303 - INFO: QoS 2 to nurse/dashboard (0.56ms)
+2025-03-29 23:36:32,304 - INFO: Fall Alert Sent
+2025-03-29 23:36:33,301 - INFO: Fall Alert Sent
+2025-03-29 23:36:33,303 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:36:34,303 - INFO: Fall Alert Sent
+2025-03-29 23:36:34,304 - INFO: QoS 2 to nurse/dashboard (0.33ms)
+2025-03-29 23:36:35,305 - INFO: Fall Alert Sent
+2025-03-29 23:36:35,312 - INFO: QoS 2 to nurse/dashboard (1.21ms)
+2025-03-29 23:36:36,304 - INFO: Fall Alert Sent
+2025-03-29 23:36:36,306 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:36:37,315 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:36:37,316 - INFO: Fall Alert Sent
+2025-03-29 23:36:38,313 - INFO: QoS 2 to nurse/dashboard (1.18ms)
+2025-03-29 23:36:38,316 - INFO: Fall Alert Sent
+2025-03-29 23:36:39,315 - INFO: QoS 2 to nurse/dashboard (0.50ms)
+2025-03-29 23:36:39,316 - INFO: Fall Alert Sent
+2025-03-29 23:36:40,318 - INFO: QoS 2 to nurse/dashboard (1.56ms)
+2025-03-29 23:36:40,320 - INFO: Fall Alert Sent
+2025-03-29 23:36:41,323 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:36:41,325 - INFO: Fall Alert Sent
+2025-03-29 23:36:42,325 - INFO: Fall Alert Sent
+2025-03-29 23:36:42,326 - INFO: QoS 2 to nurse/dashboard (0.71ms)
+2025-03-29 23:36:43,327 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:36:43,328 - INFO: Fall Alert Sent
+2025-03-29 23:36:44,327 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 23:36:44,330 - INFO: Fall Alert Sent
+2025-03-29 23:36:45,331 - INFO: Fall Alert Sent
+2025-03-29 23:36:45,332 - INFO: QoS 2 to nurse/dashboard (0.42ms)
+2025-03-29 23:36:46,329 - INFO: Fall Alert Sent
+2025-03-29 23:36:46,336 - INFO: QoS 2 to nurse/dashboard (1.01ms)
+2025-03-29 23:36:47,336 - INFO: Fall Alert Sent
+2025-03-29 23:36:47,338 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:36:48,332 - INFO: Fall Alert Sent
+2025-03-29 23:36:48,334 - INFO: QoS 2 to nurse/dashboard (1.94ms)
+2025-03-29 23:36:49,340 - INFO: QoS 2 to nurse/dashboard (0.96ms)
+2025-03-29 23:36:49,341 - INFO: Fall Alert Sent
+2025-03-29 23:36:50,333 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:36:50,334 - INFO: Fall Alert Sent
+2025-03-29 23:36:51,335 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:36:51,339 - INFO: Fall Alert Sent
+2025-03-29 23:36:52,335 - INFO: QoS 2 to nurse/dashboard (0.37ms)
+2025-03-29 23:36:52,336 - INFO: Fall Alert Sent
+2025-03-29 23:36:53,340 - INFO: QoS 2 to nurse/dashboard (1.88ms)
+2025-03-29 23:36:53,341 - INFO: Fall Alert Sent
+2025-03-29 23:36:54,339 - INFO: Fall Alert Sent
+2025-03-29 23:36:54,343 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:36:55,338 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:36:55,341 - INFO: Fall Alert Sent
+2025-03-29 23:36:56,347 - INFO: Fall Alert Sent
+2025-03-29 23:36:56,348 - INFO: QoS 2 to nurse/dashboard (0.61ms)
+2025-03-29 23:36:57,347 - INFO: Fall Alert Sent
+2025-03-29 23:36:57,347 - INFO: QoS 2 to nurse/dashboard (1.56ms)
+2025-03-29 23:36:58,355 - INFO: QoS 2 to nurse/dashboard (1.25ms)
+2025-03-29 23:36:58,357 - INFO: Fall Alert Sent
+2025-03-29 23:36:59,348 - INFO: QoS 2 to nurse/dashboard (1.32ms)
+2025-03-29 23:36:59,350 - INFO: Fall Alert Sent
+2025-03-29 23:37:00,351 - INFO: Fall Alert Sent
+2025-03-29 23:37:00,352 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 23:37:01,348 - INFO: Fall Alert Sent
+2025-03-29 23:37:01,349 - INFO: QoS 2 to nurse/dashboard (1.09ms)
+2025-03-29 23:37:02,350 - INFO: QoS 2 to nurse/dashboard (1.45ms)
+2025-03-29 23:37:02,356 - INFO: Fall Alert Sent
+2025-03-29 23:37:03,352 - INFO: Fall Alert Sent
+2025-03-29 23:37:03,353 - INFO: QoS 2 to nurse/dashboard (1.94ms)
+2025-03-29 23:37:04,352 - INFO: QoS 2 to nurse/dashboard (0.52ms)
+2025-03-29 23:37:04,353 - INFO: Fall Alert Sent
+2025-03-29 23:37:05,353 - INFO: Fall Alert Sent
+2025-03-29 23:37:05,354 - INFO: QoS 2 to nurse/dashboard (2.57ms)
+2025-03-29 23:37:06,356 - INFO: QoS 2 to nurse/dashboard (1.15ms)
+2025-03-29 23:37:06,361 - INFO: Fall Alert Sent
+2025-03-29 23:37:07,356 - INFO: Fall Alert Sent
+2025-03-29 23:37:07,360 - INFO: QoS 2 to nurse/dashboard (0.68ms)
+2025-03-29 23:37:08,359 - INFO: Fall Alert Sent
+2025-03-29 23:37:08,362 - INFO: QoS 2 to nurse/dashboard (0.88ms)
+2025-03-29 23:37:09,355 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:37:09,357 - INFO: Fall Alert Sent
+2025-03-29 23:37:10,359 - INFO: Fall Alert Sent
+2025-03-29 23:37:10,361 - INFO: QoS 2 to nurse/dashboard (0.42ms)
+2025-03-29 23:37:11,367 - INFO: Fall Alert Sent
+2025-03-29 23:37:11,368 - INFO: QoS 2 to nurse/dashboard (2.48ms)
+2025-03-29 23:37:12,361 - INFO: Fall Alert Sent
+2025-03-29 23:37:12,363 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:37:13,361 - INFO: QoS 2 to nurse/dashboard (0.58ms)
+2025-03-29 23:37:13,363 - INFO: Fall Alert Sent
+2025-03-29 23:37:14,363 - INFO: Fall Alert Sent
+2025-03-29 23:37:14,365 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:37:15,371 - INFO: QoS 2 to nurse/dashboard (0.65ms)
+2025-03-29 23:37:15,372 - INFO: Fall Alert Sent
+2025-03-29 23:37:16,364 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:37:16,366 - INFO: Fall Alert Sent
+2025-03-29 23:37:17,371 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:37:17,372 - INFO: Fall Alert Sent
+2025-03-29 23:37:18,375 - INFO: Fall Alert Sent
+2025-03-29 23:37:18,376 - INFO: QoS 2 to nurse/dashboard (0.54ms)
+2025-03-29 23:37:19,372 - INFO: Fall Alert Sent
+2025-03-29 23:37:19,375 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:37:20,373 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:37:20,375 - INFO: Fall Alert Sent
+2025-03-29 23:37:21,379 - INFO: QoS 2 to nurse/dashboard (0.56ms)
+2025-03-29 23:37:21,379 - INFO: Fall Alert Sent
+2025-03-29 23:37:22,375 - INFO: Fall Alert Sent
+2025-03-29 23:37:22,376 - INFO: QoS 2 to nurse/dashboard (0.43ms)
+2025-03-29 23:37:23,375 - INFO: QoS 2 to nurse/dashboard (0.71ms)
+2025-03-29 23:37:23,380 - INFO: Fall Alert Sent
+2025-03-29 23:37:24,375 - INFO: Fall Alert Sent
+2025-03-29 23:37:24,375 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 23:37:25,379 - INFO: QoS 2 to nurse/dashboard (1.43ms)
+2025-03-29 23:37:25,379 - INFO: Fall Alert Sent
+2025-03-29 23:37:26,380 - INFO: Fall Alert Sent
+2025-03-29 23:37:26,382 - INFO: QoS 2 to nurse/dashboard (3.20ms)
+2025-03-29 23:37:27,381 - INFO: Fall Alert Sent
+2025-03-29 23:37:27,381 - INFO: QoS 2 to nurse/dashboard (0.90ms)
+2025-03-29 23:37:28,382 - INFO: QoS 2 to nurse/dashboard (0.48ms)
+2025-03-29 23:37:28,387 - INFO: Fall Alert Sent
+2025-03-29 23:37:29,383 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:37:29,384 - INFO: Fall Alert Sent
+2025-03-29 23:37:30,386 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 23:37:30,392 - INFO: Fall Alert Sent
+2025-03-29 23:37:31,385 - INFO: Fall Alert Sent
+2025-03-29 23:37:31,388 - INFO: QoS 2 to nurse/dashboard (3.44ms)
+2025-03-29 23:37:32,390 - INFO: QoS 2 to nurse/dashboard (0.65ms)
+2025-03-29 23:37:32,391 - INFO: Fall Alert Sent
+2025-03-29 23:37:33,391 - INFO: Fall Alert Sent
+2025-03-29 23:37:33,395 - INFO: QoS 2 to nurse/dashboard (1.82ms)
+2025-03-29 23:37:34,391 - INFO: Fall Alert Sent
+2025-03-29 23:37:34,395 - INFO: QoS 2 to nurse/dashboard (3.34ms)
+2025-03-29 23:37:35,392 - INFO: QoS 2 to nurse/dashboard (0.54ms)
+2025-03-29 23:37:35,404 - INFO: Fall Alert Sent
+2025-03-29 23:37:36,395 - INFO: Fall Alert Sent
+2025-03-29 23:37:36,395 - INFO: QoS 2 to nurse/dashboard (0.40ms)
+2025-03-29 23:37:37,395 - INFO: Fall Alert Sent
+2025-03-29 23:37:37,402 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:37:38,396 - INFO: QoS 2 to nurse/dashboard (0.46ms)
+2025-03-29 23:37:38,397 - INFO: Fall Alert Sent
+2025-03-29 23:37:39,398 - INFO: QoS 2 to nurse/dashboard (1.77ms)
+2025-03-29 23:37:39,400 - INFO: Fall Alert Sent
+2025-03-29 23:37:40,398 - INFO: QoS 2 to nurse/dashboard (0.45ms)
+2025-03-29 23:37:41,165 - INFO: Fall Alert Sent
+2025-03-29 23:37:42,167 - INFO: QoS 2 to nurse/dashboard (0.37ms)
+2025-03-29 23:37:42,171 - INFO: Fall Alert Sent
+2025-03-29 23:37:43,169 - INFO: Fall Alert Sent
+2025-03-29 23:37:43,171 - INFO: QoS 2 to nurse/dashboard (3.21ms)
+2025-03-29 23:37:44,169 - INFO: Fall Alert Sent
+2025-03-29 23:37:44,170 - INFO: QoS 2 to nurse/dashboard (0.71ms)
+2025-03-29 23:37:45,171 - INFO: QoS 2 to nurse/dashboard (0.30ms)
+2025-03-29 23:38:06,187 - INFO: Audio Alert: 
+2025-03-29 23:38:07,187 - INFO: QoS 2 to video/monitor (0.31ms)
+2025-03-29 23:38:09,203 - INFO: QoS 2 to nurse/dashboard (0.38ms)
+2025-03-29 23:38:15,915 - INFO: Fall Alert Sent
+2025-03-29 23:38:16,915 - INFO: Fall Alert Sent
+2025-03-29 23:38:16,917 - INFO: QoS 2 to nurse/dashboard (0.93ms)
+2025-03-29 23:38:17,916 - INFO: Fall Alert Sent
+2025-03-29 23:38:17,917 - INFO: QoS 2 to nurse/dashboard (0.71ms)
+2025-03-29 23:38:18,916 - INFO: Fall Alert Sent
+2025-03-29 23:38:18,917 - INFO: QoS 2 to nurse/dashboard (0.66ms)
+2025-03-29 23:38:19,919 - INFO: Fall Alert Sent
+2025-03-29 23:38:19,923 - INFO: QoS 2 to nurse/dashboard (0.51ms)
+2025-03-29 23:38:20,921 - INFO: Fall Alert Sent
+2025-03-29 23:38:20,921 - INFO: QoS 2 to nurse/dashboard (1.17ms)
+2025-03-29 23:38:21,921 - INFO: Fall Alert Sent
+2025-03-29 23:38:21,922 - INFO: QoS 2 to nurse/dashboard (0.39ms)
+2025-03-29 23:38:22,921 - INFO: Fall Alert Sent
+2025-03-29 23:38:22,923 - INFO: QoS 2 to nurse/dashboard (0.49ms)
+2025-03-29 23:38:23,921 - INFO: QoS 2 to nurse/dashboard (0.34ms)
+2025-03-29 23:38:30,170 - INFO: Fall Alert Sent
+2025-03-29 23:38:31,173 - INFO: QoS 2 to nurse/dashboard (0.81ms)
+2025-03-29 23:38:31,173 - INFO: Fall Alert Sent
+2025-03-29 23:38:32,173 - INFO: Fall Alert Sent
+2025-03-29 23:38:32,176 - INFO: QoS 2 to nurse/dashboard (1.15ms)
+2025-03-29 23:38:33,172 - INFO: Fall Alert Sent
+2025-03-29 23:38:33,172 - INFO: QoS 2 to nurse/dashboard (0.69ms)
+2025-03-29 23:38:34,174 - INFO: QoS 2 to nurse/dashboard (0.46ms)
+2025-03-29 23:38:34,176 - INFO: Fall Alert Sent
+2025-03-29 23:38:35,173 - INFO: Fall Alert Sent
+2025-03-29 23:38:35,174 - INFO: QoS 2 to nurse/dashboard (0.74ms)
+2025-03-29 23:38:36,174 - INFO: QoS 2 to nurse/dashboard (0.41ms)

@@ -4886,3 +4886,148 @@
 2025-03-29 14:29:20,587 - INFO: Fall Alert Started
 2025-03-29 14:29:21,032 - INFO: Fall Alert Started
 2025-03-29 14:29:21,574 - INFO: Fall Alert Started
+2025-03-29 14:39:19,925 - INFO: Shutting down...
+2025-03-29 22:38:05,758 - ERROR: Central Hub Error: timed out
+2025-03-29 22:38:05,759 - ERROR: Fatal error: timed out
+2025-03-29 22:38:16,963 - ERROR: Central Hub Error: timed out
+2025-03-29 22:38:16,964 - ERROR: Fatal error: timed out
+2025-03-29 22:38:24,463 - ERROR: Central Hub Error: timed out
+2025-03-29 22:38:24,464 - ERROR: Fatal error: timed out
+2025-03-29 22:38:57,910 - ERROR: Central Hub Error: timed out
+2025-03-29 22:38:57,911 - ERROR: Fatal error: timed out
+2025-03-29 22:39:13,585 - ERROR: Central Hub Error: timed out
+2025-03-29 22:39:13,586 - ERROR: Fatal error: timed out
+2025-03-29 22:44:08,212 - ERROR: Central Hub Error: timed out
+2025-03-29 22:44:08,214 - ERROR: Fatal error: timed out
+2025-03-29 22:44:18,633 - INFO: Connected to MQTT Broker 192.168.18.138
+2025-03-29 22:44:19,139 - INFO: Subscribed to audio/emergency with QoS 2
+2025-03-29 22:44:19,139 - INFO: Subscribed to video/emergency with QoS 2
+2025-03-29 22:44:19,139 - INFO: Subscribed to proximity/alert with QoS 2
+2025-03-29 22:44:19,143 - INFO: Video activation alert sent
+2025-03-29 22:44:19,147 - INFO: Audio Alert Started: 
+2025-03-29 22:44:19,147 - INFO: Video activation alert sent
+2025-03-29 22:44:19,148 - INFO: Audio Alert Started: 
+2025-03-29 22:44:25,070 - INFO: Video activation alert sent
+2025-03-29 22:44:25,070 - INFO: Audio Alert Started: 
+2025-03-29 22:44:27,860 - INFO: Fall Alert Started
+2025-03-29 22:44:28,293 - INFO: Fall Alert Started
+2025-03-29 22:44:28,718 - INFO: Fall Alert Started
+2025-03-29 22:44:29,233 - INFO: Fall Alert Started
+2025-03-29 22:44:29,665 - INFO: Fall Alert Started
+2025-03-29 22:44:30,216 - INFO: Fall Alert Started
+2025-03-29 22:44:30,656 - INFO: Fall Alert Started
+2025-03-29 22:44:31,160 - INFO: Fall Alert Started
+2025-03-29 22:44:31,619 - INFO: Fall Alert Started
+2025-03-29 22:44:32,680 - INFO: Fall Alert Started
+2025-03-29 22:44:33,181 - INFO: Fall Alert Started
+2025-03-29 22:44:33,660 - INFO: Fall Alert Started
+2025-03-29 22:44:34,212 - INFO: Fall Alert Started
+2025-03-29 22:44:34,788 - INFO: Fall Alert Started
+2025-03-29 22:44:35,115 - INFO: Video activation alert sent
+2025-03-29 22:44:35,115 - INFO: Audio Alert Started: 
+2025-03-29 22:44:35,409 - INFO: Fall Alert Started
+2025-03-29 22:44:35,952 - INFO: Fall Alert Started
+2025-03-29 22:44:36,535 - INFO: Fall Alert Started
+2025-03-29 22:44:37,046 - INFO: Fall Alert Started
+2025-03-29 22:44:40,018 - INFO: Fall Alert Started
+2025-03-29 22:44:40,557 - INFO: Fall Alert Started
+2025-03-29 22:44:41,660 - INFO: Fall Alert Started
+2025-03-29 22:44:42,278 - INFO: Fall Alert Started
+2025-03-29 22:44:43,358 - INFO: Fall Alert Started
+2025-03-29 22:44:45,232 - INFO: Video activation alert sent
+2025-03-29 22:44:45,232 - INFO: Audio Alert Started: 
+2025-03-29 22:44:52,125 - INFO: Fall Alert Started
+2025-03-29 22:44:57,039 - INFO: Video activation alert sent
+2025-03-29 22:44:57,040 - INFO: Audio Alert Started: 
+2025-03-29 22:45:08,064 - INFO: Video activation alert sent
+2025-03-29 22:45:08,066 - INFO: Audio Alert Started: 
+2025-03-29 22:45:09,850 - INFO: Fall Alert Started
+2025-03-29 22:45:18,072 - INFO: Video activation alert sent
+2025-03-29 22:45:18,072 - INFO: Audio Alert Started: 
+2025-03-29 22:45:22,465 - INFO: Fall Alert Started
+2025-03-29 22:45:23,014 - INFO: Fall Alert Started
+2025-03-29 22:45:26,135 - INFO: Fall Alert Started
+2025-03-29 22:45:26,684 - INFO: Fall Alert Started
+2025-03-29 22:45:28,146 - INFO: Video activation alert sent
+2025-03-29 22:45:28,151 - INFO: Audio Alert Started: 
+2025-03-29 22:45:40,116 - INFO: Video activation alert sent
+2025-03-29 22:45:40,117 - INFO: Audio Alert Started: 
+2025-03-29 22:45:42,199 - INFO: Fall Alert Started
+2025-03-29 22:45:43,405 - INFO: Fall Alert Started
+2025-03-29 22:45:43,913 - INFO: Fall Alert Started
+2025-03-29 22:45:45,007 - INFO: Fall Alert Started
+2025-03-29 22:45:45,584 - INFO: Fall Alert Started
+2025-03-29 22:45:46,263 - INFO: Fall Alert Started
+2025-03-29 22:45:46,976 - INFO: Fall Alert Started
+2025-03-29 22:45:47,575 - INFO: Fall Alert Started
+2025-03-29 22:45:48,161 - INFO: Fall Alert Started
+2025-03-29 22:45:48,794 - INFO: Fall Alert Started
+2025-03-29 22:45:49,408 - INFO: Fall Alert Started
+2025-03-29 22:45:51,255 - INFO: Video activation alert sent
+2025-03-29 22:45:51,255 - INFO: Audio Alert Started: 
+2025-03-29 22:45:58,574 - INFO: Fall Alert Started
+2025-03-29 22:45:59,144 - INFO: Fall Alert Started
+2025-03-29 22:45:59,805 - INFO: Fall Alert Started
+2025-03-29 22:46:00,527 - INFO: Fall Alert Started
+2025-03-29 22:46:01,792 - INFO: Fall Alert Started
+2025-03-29 22:46:02,139 - INFO: Video activation alert sent
+2025-03-29 22:46:02,139 - INFO: Audio Alert Started: 
+2025-03-29 22:46:15,307 - INFO: Video activation alert sent
+2025-03-29 22:46:15,307 - INFO: Audio Alert Started: 
+2025-03-29 22:46:28,341 - INFO: Video activation alert sent
+2025-03-29 22:46:28,342 - INFO: Audio Alert Started: 
+2025-03-29 22:46:33,654 - INFO: Fall Alert Started
+2025-03-29 22:46:34,223 - INFO: Fall Alert Started
+2025-03-29 22:46:34,854 - INFO: Fall Alert Started
+2025-03-29 22:46:35,683 - INFO: Fall Alert Started
+2025-03-29 22:46:36,506 - INFO: Fall Alert Started
+2025-03-29 22:46:39,308 - INFO: Video activation alert sent
+2025-03-29 22:46:39,308 - INFO: Audio Alert Started: 
+2025-03-29 22:46:52,251 - INFO: Video activation alert sent
+2025-03-29 22:46:52,252 - INFO: Audio Alert Started: 
+2025-03-29 22:47:00,564 - INFO: Fall Alert Started
+2025-03-29 22:47:02,741 - INFO: Fall Alert Started
+2025-03-29 22:47:03,179 - INFO: Video activation alert sent
+2025-03-29 22:47:03,180 - INFO: Audio Alert Started: 
+2025-03-29 22:47:03,540 - INFO: Fall Alert Started
+2025-03-29 22:47:04,153 - INFO: Fall Alert Started
+2025-03-29 22:47:04,767 - INFO: Fall Alert Started
+2025-03-29 22:47:05,722 - INFO: Fall Alert Started
+2025-03-29 22:47:07,162 - INFO: Fall Alert Started
+2025-03-29 22:47:08,099 - INFO: Fall Alert Started
+2025-03-29 22:47:09,552 - INFO: Fall Alert Started
+2025-03-29 22:47:10,370 - INFO: Fall Alert Started
+2025-03-29 22:47:11,006 - INFO: Fall Alert Started
+2025-03-29 22:47:14,083 - INFO: Fall Alert Started
+2025-03-29 22:47:15,261 - INFO: Video activation alert sent
+2025-03-29 22:47:15,262 - INFO: Audio Alert Started: 
+2025-03-29 22:47:15,789 - INFO: Fall Alert Started
+2025-03-29 22:47:21,482 - INFO: Fall Alert Started
+2025-03-29 22:47:22,357 - INFO: Fall Alert Started
+2025-03-29 22:47:24,063 - INFO: Fall Alert Started
+2025-03-29 22:47:24,841 - INFO: Fall Alert Started
+2025-03-29 22:47:25,840 - INFO: Fall Alert Started
+2025-03-29 22:47:26,519 - INFO: Video activation alert sent
+2025-03-29 22:47:26,519 - INFO: Audio Alert Started: 
+2025-03-29 22:47:26,864 - INFO: Fall Alert Started
+2025-03-29 22:47:27,169 - INFO: Fall Alert Started
+2025-03-29 22:47:27,361 - INFO: Fall Alert Started
+2025-03-29 22:47:27,542 - INFO: Fall Alert Started
+2025-03-29 22:47:27,714 - INFO: Fall Alert Started
+2025-03-29 22:47:27,917 - INFO: Fall Alert Started
+2025-03-29 22:47:28,266 - INFO: Fall Alert Started
+2025-03-29 22:47:28,513 - INFO: Fall Alert Started
+2025-03-29 22:47:28,691 - INFO: Fall Alert Started
+2025-03-29 22:47:28,909 - INFO: Fall Alert Started
+2025-03-29 22:47:29,186 - INFO: Fall Alert Started
+2025-03-29 22:47:29,435 - INFO: Fall Alert Started
+2025-03-29 22:47:29,613 - INFO: Fall Alert Started
+2025-03-29 22:47:29,801 - INFO: Fall Alert Started
+2025-03-29 22:47:30,039 - INFO: Fall Alert Started
+2025-03-29 22:47:30,290 - INFO: Fall Alert Started
+2025-03-29 22:47:30,456 - INFO: Fall Alert Started
+2025-03-29 22:47:30,647 - INFO: Fall Alert Started
+2025-03-29 22:47:31,071 - INFO: Fall Alert Started
+2025-03-29 22:47:37,217 - INFO: Video activation alert sent
+2025-03-29 22:47:37,224 - INFO: Audio Alert Started: 
+2025-03-29 22:47:39,842 - INFO: Shutting down...

@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 
 class SimplifiedCentralHub:
-    def __init__(self, broker_address='192.168.211.254', broker_port=1883, reconnect_delay=3, publish_retry_delay=1):
+    def __init__(self, broker_address='192.168.18.138', broker_port=1883, reconnect_delay=3, publish_retry_delay=1):
         # MQTT Client Setup with clean_session=False for reliability
         self.client_id = "CentralHub"
         self.client = mqtt.Client(client_id=self.client_id, clean_session=False)

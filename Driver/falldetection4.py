@@ -9,10 +9,15 @@ import socketio
 import base64
 import threading
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 # WebSocket client setup
 sio = socketio.Client()
-sio.connect('http://192.168.18.49:5000')
+try:
+    sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server's IP
+    print("WebSocket connected")
+except Exception as e:
+    print(f"WebSocket connection failed: {e}")
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -36,32 +41,35 @@ MQTT_TOPIC = "video/emergency"
 
 # Camera control flag
 camera_active = False
-camera_timer = None
+video_timer = None
+video_timer_lock = threading.Lock()
 camera_state_lock = threading.Lock()
 
-# Timeout handler
-def deactivate_camera_after_timeout():
+# Thread pool for non-blocking tasks
+executor = ThreadPoolExecutor(max_workers=5)
+
+# Function to stop video feed after timeout
+def stop_video_after_timeout():
     global camera_active
-    time.sleep(5)
-    with camera_state_lock:
+    with video_timer_lock:
         camera_active = False
-    print("\nCamera deactivated due to timeout (5 minutes).")
+        print("Camera deactivated after 5-minute timeout")
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
-    global camera_active, camera_timer
+    global camera_active, video_timer
     try:
         payload = json.loads(message.payload.decode('utf-8'))
         if message.topic == "video/monitor":
             with camera_state_lock:
-                camera_active = payload.get('activate', False)
-            print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
-
-            if camera_active:
-                if camera_timer and camera_timer.is_alive():
-                    camera_timer.cancel()
-                camera_timer = threading.Timer(5, deactivate_camera_after_timeout)
-                camera_timer.start()
+                activate = payload.get('activate', False)
+                camera_active = activate
+                print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+                if activate:
+                    if video_timer and video_timer.is_alive():
+                        video_timer.cancel()
+                    video_timer = threading.Timer(300, stop_video_after_timeout)
+                    video_timer.start()
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
 
@@ -85,7 +93,7 @@ def calculate_angle(a, b, c):
     angle = math.acos(dot_product / (mag_ba * mag_bc))
     return math.degrees(angle)
 
-# Function to classify patient's state based on the pose
+# Classify patient state using pose landmarks
 def classify_patient_state(landmarks, frame_shape):
     def to_pixel_coords(lm):
         return int(lm.x * frame_shape[1]), int(lm.y * frame_shape[0])
@@ -132,7 +140,7 @@ def generate_frames():
                     print("Error: Unable to access the camera")
                     camera_active = False
                     continue
-                cap.set(cv2.CAP_PROP_FPS, 30)
+                cap.set(cv2.CAP_PROP_FPS, 60)
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
                 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
                 print("Camera activated")
@@ -152,14 +160,16 @@ def generate_frames():
                 cv2.putText(frame, "Bed", (bed_x1, bed_y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
                 pose_results = pose.process(rgb_frame)
+                mqttDataMP = None
+
                 if pose_results.pose_landmarks:
                     mp_drawing.draw_landmarks(frame, pose_results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
                     state_mediapipe = classify_patient_state(pose_results.pose_landmarks.landmark, frame.shape)
 
-                    left_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].x * width
-                    left_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP].y * height
-                    right_hip_x = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].x * width
-                    right_hip_y = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP].y * height
+                    left_hip = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP]
+                    right_hip = pose_results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP]
+                    left_hip_x, left_hip_y = left_hip.x * width, left_hip.y * height
+                    right_hip_x, right_hip_y = right_hip.x * width, right_hip.y * height
 
                     if (bed_x1 < left_hip_x < bed_x2 and bed_y1 < left_hip_y < bed_y2) or \
                        (bed_x1 < right_hip_x < bed_x2 and bed_y1 < right_hip_y < bed_y2):
@@ -188,26 +198,21 @@ def generate_frames():
                         cv2.putText(frame, line, (50, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
                         y_offset += 20
 
-                    if state_mediapipe == "Fallen out of bed":
-                        mqtt_data = {
-                            "timestamp": datetime.now().isoformat(),
-                            "mediapipe_state": state_mediapipe,
-                            "source": "video"
-                        }
+                    mqttDataMP = state_mediapipe
 
-                        try:
-                            client.publish(MQTT_TOPIC, json.dumps(mqtt_data), qos=2)
-                            print(f"Fall alert sent via MQTT: State={state_mediapipe}")
-                        except Exception as e:
-                            print(f"Failed to send MQTT message: {e}")
+                if mqttDataMP == "Fallen out of bed":
+                    mqtt_data = {
+                        "timestamp": datetime.now().isoformat(),
+                        "mediapipe_state": mqttDataMP,
+                        "source": "video"
+                    }
+                    executor.submit(client.publish, MQTT_TOPIC, json.dumps(mqtt_data), 2)
+                    print(f"Fall alert sent via MQTT: State={mqttDataMP}")
 
-                try:
-                    if sio.connected:
-                        _, jpeg = cv2.imencode('.jpg', frame)
-                        encoded_frame = base64.b64encode(jpeg).decode('utf-8')
-                        sio.emit('video_frame', encoded_frame)
-                except Exception as e:
-                    print("WebSocket send error:", e)
+                if sio.connected:
+                    _, jpeg = cv2.imencode('.jpg', frame)
+                    encoded_frame = base64.b64encode(jpeg).decode('utf-8')
+                    executor.submit(sio.emit, 'video_frame', encoded_frame)
 
             except Exception as e:
                 print(f"Error processing frame: {e}")
@@ -217,6 +222,8 @@ def generate_frames():
             if cap is not None:
                 cap.release()
                 cap = None
+                if sio.connected:
+                    sio.disconnect()
                 print("Camera deactivated")
             time.sleep(1)
 
