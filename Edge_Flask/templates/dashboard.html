@@ -74,7 +74,7 @@
       }
 
       .alert-list {
-        max-height: 600px;
+        max-height: 780px;
         overflow-y: auto;
       }
 
@@ -160,49 +160,9 @@
           </div>
         </div>
 
-        <div class="current-states">
-          <div class="state-box">
-            <h3>Video Detection</h3>
-            <p>Status: {{ data.current_states.video.details or 'No data' }}</p>
-            <p class="timestamp">
-              Last update: {{ data.current_states.video.last_updated or 'Never'
-              }}
-            </p>
-          </div>
+      </div> <!-- ✅ Closes the left panel -->
 
-          <div class="state-box">
-            <h3>Audio Detection</h3>
-            <p>
-              Last detection: {{ data.current_states.audio.details or 'No
-              detection' }}
-            </p>
-            <p>
-              Confidence: {{ data.current_states.audio.confidence or 'N/A' }}
-            </p>
-            <p class="timestamp">
-              Last detection: {{ data.current_states.audio.last_detection or
-              'Never' }}
-            </p>
-          </div>
-
-          <div class="state-box">
-            <h3>Proximity Sensor</h3>
-            <p>
-              Patient in bed: {{ 'No' if
-              data.current_states.proximity.out_of_bed else 'Yes' }}
-            </p>
-            <p>
-              Distances: {{ data.current_states.proximity.distances or 'No data'
-              }}
-            </p>
-            <p class="timestamp">
-              Last reading: {{ data.current_states.proximity.last_reading or
-              'Never' }}
-            </p>
-          </div>
-        </div>
-      </div>
-
+      <!-- ✅ Right-side Notifications Panel -->
       <div class="panel">
         <h2>Recent Alerts</h2>
         <div class="alert-list">
@@ -215,8 +175,9 @@
           {% endfor %}
         </div>
       </div>
-    </div>
+    </div> <!-- ✅ Closes the dashboard-container -->
 
+      
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
       const socket = io();

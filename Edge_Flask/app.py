@@ -105,13 +105,17 @@ def on_message(client, userdata, msg):
         formatted_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%d %H:%M:%S")
 
         # Construct final message
-        message = f"""👤 Patient Name: {patient_name}
-🏥 Room No: {room_no}
-⚠️ Emergency Level: {priority}
-alert type: {alert_type}
-🩺 Patient Condition: {details}
-🛏️ Still in Bed: {in_bed}
-Timestamp:{formatted_time}"""
+        message = (
+    f"👤 Patient Name        : {patient_name}\n"
+    f"📡 Source              : {source.capitalize()}\n"
+    f"🏥 Room No             : {room_no}\n"
+    f"⚠️ Emergency Level     : {priority}\n"
+    f"🔔 Alert Type          : {alert_type}\n"
+    f"🩺 Patient Condition   : {details}\n"
+    f"🛏️ Still in Bed        : {in_bed}\n"
+    f"⏰ Timestamp           : {formatted_time}"
+)
+
 
         # Emit to dashboard immediately
         socketio.emit('new_notification', {
