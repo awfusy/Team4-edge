@@ -111,7 +111,7 @@ def on_message(client, userdata, msg):
 alert type: {alert_type}
 🩺 Patient Condition: {details}
 🛏️ Still in Bed: {in_bed}
-{formatted_time}"""
+Timestamp:{formatted_time}"""
 
         # Emit to dashboard immediately
         socketio.emit('new_notification', {
@@ -128,7 +128,7 @@ mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
 try:
-    mqtt_client.connect("192.168.211.254", 1883, 60)
+    mqtt_client.connect("test.mosquitto.org", 1883, 60)
     mqtt_client.loop_start()
 except Exception as e:
     print(f"Failed to connect to MQTT broker: {e}")

@@ -25,7 +25,7 @@
         gap: 20px;
         max-width: 1400px;
         margin: 0 auto;
-        }
+      }
 
       .panel {
         background: white;
@@ -73,10 +73,10 @@
         border-radius: 5px;
       }
 
-        .alert-list {
+      .alert-list {
         max-height: 600px;
         overflow-y: auto;
-        }
+      }
 
       .alert {
         padding: 10px;
@@ -114,8 +114,12 @@
       <div class="panel">
         <h1>Room {{ data.room_number }} - Patient Monitoring</h1>
 
-        <div class="status-indicator status-{{ data.patient_status.lower() }}">
-          Patient Status: {{ data.patient_status }}
+        <div
+          id="patient-status"
+          class="status-indicator status-{{ data.patient_status.lower() }}"
+        >
+          Patient Status:
+          <span id="status-text">{{ data.patient_status }}</span>
         </div>
 
         <div class="video-feed">
@@ -266,24 +270,68 @@
         placeholder.style.display = "flex";
       });
 
-        socket.on("new_notification", function (data) {
+      socket.on("new_notification", function (data) {
         const alertBox = document.createElement("div");
         alertBox.classList.add("alert");
 
-        if (data.priority === "HIGH") {
-            alertBox.classList.add("alert-high");
-        } else if (data.priority === "MEDIUM") {
-            alertBox.classList.add("alert-medium");
+        const priority = data.priority.toUpperCase();
+
+        const statusElement = document.getElementById("patient-status");
+        const statusText = document.getElementById("status-text");
+
+        // Reset status classes
+        statusElement.classList.remove(
+          "status-emergency",
+          "status-attention",
+          "status-normal"
+        );
+
+        // Stop any currently playing audio
+        ["high-sound", "medium-sound", "low-sound"].forEach((id) => {
+          const sound = document.getElementById(id);
+          sound.pause();
+          sound.currentTime = 0; // rewind to start
+        });
+
+        if (priority === "HIGH") {
+          alertBox.classList.add("alert-high");
+          document.getElementById("high-sound").play();
+
+          statusElement.classList.add("status-emergency");
+          statusText.textContent = "Emergency";
+        } else if (priority === "MEDIUM") {
+          alertBox.classList.add("alert-medium");
+          document.getElementById("medium-sound").play();
+
+          statusElement.classList.add("status-attention");
+          statusText.textContent = "Needs Assistance";
         } else {
-            alertBox.classList.add("alert-low");
+          alertBox.classList.add("alert-low");
+          document.getElementById("low-sound").play();
+
+          statusElement.classList.add("status-normal");
+          statusText.textContent = "Normal";
         }
 
         alertBox.innerHTML = `
-            <pre style="white-space: pre-wrap;">${data.message}</pre>
-        `;
+    <pre style="white-space: pre-wrap;">${data.message}</pre>
+  `;
 
         document.querySelector(".alert-list").prepend(alertBox);
-        });
+      });
     </script>
+    <!-- Audio Alerts -->
+    <audio
+      id="high-sound"
+      src="{{ url_for('static', filename='sounds/high_priority.wav') }}"
+    ></audio>
+    <audio
+      id="medium-sound"
+      src="{{ url_for('static', filename='sounds/medium_priority.wav') }}"
+    ></audio>
+    <audio
+      id="low-sound"
+      src="{{ url_for('static', filename='sounds/low_priority.wav') }}"
+    ></audio>
   </body>
 </html>
