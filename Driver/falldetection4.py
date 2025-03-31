@@ -54,6 +54,12 @@ def stop_video_after_timeout():
     with video_timer_lock:
         camera_active = False
         print("Camera deactivated after 10 seconds timeout")
+        camerastate_data = {
+            "timestamp": datetime.now().isoformat(),
+            "source": "video",
+            "cameraState": camera_active
+        }
+        executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
@@ -69,22 +75,46 @@ def on_message(client, userdata, message):
                 if activate and camera_active:
                     print("Camera activation ignored — already active")
                     return
-
+                
+                # ✅ Ignore deactivation if already inactive
+                if not activate and not camera_active:
+                    print("Camera deactivation ignored — already inactive")
+                    return
+                
                 # ✅ Otherwise, update state
                 camera_active = activate
                 print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
 
                 if activate:
+                    # If the source is "audio", set the timer
                     if source == "audio":
                         if video_timer and video_timer.is_alive():
-                            video_timer.cancel()
+                            video_timer.cancel()  # Cancel any existing timer
                         video_timer = threading.Timer(20, stop_video_after_timeout)
                         video_timer.start()
                         print("Camera will deactivate after timeout (20s) due to audio trigger.")
+
+                    # If the source is "proximity", no timeout is set
                     elif source == "proximity":
                         if video_timer and video_timer.is_alive():
-                            video_timer.cancel()  # Ensure no timeout is running
+                            video_timer.cancel()  # Cancel any existing timer
                         print("Camera activated via proximity sensor, no timeout set.")
+
+                    # Publish the camera activation state after it has been updated
+                    camerastate_data = {
+                        'timestamp': datetime.now().isoformat(),
+                        'source': source,
+                        'cameraState': camera_active
+                    }
+                    executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
+                else:
+                    # Publish deactivation message if camera is deactivated
+                    camerastate_data = {
+                        'timestamp': datetime.now().isoformat(),
+                        'source': source,
+                        'cameraState': camera_active
+                    }
+                    executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
 
@@ -221,7 +251,6 @@ def generate_frames():
                         "timestamp": datetime.now().isoformat(),
                         "mediapipe_state": mqttDataMP,
                         "source": "video",
-                        "cameraState": camera_active
                     }
                     executor.submit(client.publish, MQTT_TOPIC, json.dumps(mqtt_data), 2)
                     print(f"Fall alert sent via MQTT: State={mqttDataMP}")
