@@ -82,7 +82,7 @@ mqtt_client = mqtt.Client()
 
 
 patient_names = ["Alice Tan"]
-room_numbers = ["Ward 1A"]
+room_numbers = ["Room 101"]
 
 # MQTT connection callback
 def on_connect(client, userdata, flags, rc):
