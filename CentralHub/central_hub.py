@@ -76,7 +76,7 @@ class SimplifiedCentralHub:
                 result, _ = self.client.subscribe(topic, qos)  # Unpack the tuple
                 if result == mqtt.MQTT_ERR_SUCCESS:  # Check result[0]
                     topic_list_str = ", ".join(f"{topic} (QoS: {qos})" for topic, qos in self.topics.items())
-                    print(f"Subscribed to {self.topics)} topics: {topic_list_str}")
+                    print(f"Subscribed to {len(self.topics)} topics: {topic_list_str}")
                     self.logger.info(f"Subscribed to {topic} with QoS {qos}")
                 else:
                     print(f"Failed to subscribe to {topic}")  # Added print
