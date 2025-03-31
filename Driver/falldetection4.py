@@ -14,10 +14,10 @@ from concurrent.futures import ThreadPoolExecutor
 # WebSocket client setup
 sio = socketio.Client()
 try:
-    sio.connect('http://192.168.61.139:5000')  # Replace with your Flask server's IP
-    print("WebSocket connected")
+	sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server IP
+	print("WebSocket connected")
 except Exception as e:
-    print(f"WebSocket connection failed: {e}")
+	print(f"WebSocket connection failed: {e}")
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -73,21 +73,26 @@ def on_message(client, userdata, message):
 
                 # ✅ Ignore activation if already active
                 if activate and camera_active:
-                    print("Camera activation ignored — already active")
+                    #print("Camera activation ignored — already active")
                     return
                 
                 # ✅ Ignore deactivation if already inactive
                 if not activate and not camera_active:
-                    print("Camera deactivation ignored — already inactive")
+                    #print("Camera deactivation ignored — already inactive")
                     return
                 
                 # ✅ Otherwise, update state
                 camera_active = activate
-                print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+                #print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+                if activate:                    
+                    try:
+                        sio.connect('http://192.168.61.139:5000')
+                        #print("WebSocket connnected")
+                    except Exception as e:
+                        print(f"WebSocket connection failed: {e}")     
 
-                if activate:
-                    # If the source is "audio", set the timer
-                    if source == "audio":
+					# If the source is "audio", set the timer
+                    if source == "audio":						
                         if video_timer and video_timer.is_alive():
                             video_timer.cancel()  # Cancel any existing timer
                         video_timer = threading.Timer(20, stop_video_after_timeout)
@@ -96,11 +101,13 @@ def on_message(client, userdata, message):
 
                     # If the source is "proximity", no timeout is set
                     elif source == "proximity":
+
                         if video_timer and video_timer.is_alive():
                             video_timer.cancel()  # Cancel any existing timer
                         print("Camera activated via proximity sensor, no timeout set.")
 
-                    # Publish the camera activation state after it has been updated
+                    # Publish the camera activation state after it has been updated                    
+                    #print("camera_activate State", camera_active)
                     camerastate_data = {
                         'timestamp': datetime.now().isoformat(),
                         'source': source,
@@ -186,10 +193,10 @@ def generate_frames():
                     print("Error: Unable to access the camera")
                     camera_active = False
                     continue
-                cap.set(cv2.CAP_PROP_FPS, 60)
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-                print("Camera activated")
+                cap.set(cv2.CAP_PROP_FPS, 30)
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+                #print("Camera activated")
 
             try:
                 ret, frame = cap.read()
@@ -199,8 +206,10 @@ def generate_frames():
 
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 height, width = frame.shape[:2]
-                bed_x1, bed_y1 = width // 4, 0
-                bed_x2, bed_y2 = 3 * width // 4, height
+                bed_width = (3 * width // 4 - width // 4) // 2  # Half of original width
+                bed_x1 = width // 2 - bed_width // 2
+                bed_x2 = width // 2 + bed_width // 2
+                bed_y1, bed_y2 = 0, height
 
                 cv2.rectangle(frame, (bed_x1, bed_y1), (bed_x2, bed_y2), (0, 0, 255), 2)
                 cv2.putText(frame, "Bed", (bed_x1, bed_y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
@@ -258,7 +267,7 @@ def generate_frames():
                 if sio.connected:
                     _, jpeg = cv2.imencode('.jpg', frame)
                     encoded_frame = base64.b64encode(jpeg).decode('utf-8')
-                    executor.submit(sio.emit, 'video_frame', encoded_frame)
+                    executor.submit(sio.emit, 'video_frame', encoded_frame)               
 
             except Exception as e:
                 print(f"Error processing frame: {e}")

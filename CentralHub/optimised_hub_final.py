@@ -20,7 +20,7 @@ class OptimizedCentralHub:
         self.broker_port = broker_port
         self.reconnect_delay = reconnect_delay
         self.publish_retry_delay = publish_retry_delay
-        
+        self._last_camera_state = None 
         # Logging with timed rotation
         logging.basicConfig(
             level=logging.INFO,
@@ -102,15 +102,27 @@ class OptimizedCentralHub:
             self.executor_qos2._max_workers = qos2_threads
             self.logger.info(f"Adjusted QoS 2 threads to {qos2_threads}")
 
+
     def thread_pool_monitor(self):
-        """Periodically monitor and adjust thread pools."""
+        """Periodically monitor and adjust thread pools based on system load."""
         while self.running:
             try:
-                self.adjust_thread_pool()
-                time.sleep(self.thread_scaling_interval)
+                cpu_usage = psutil.cpu_percent(interval=1)  # Monitor CPU usage
+                memory_usage = psutil.virtual_memory().percent  # Monitor memory usage
+
+                # Determine appropriate interval based on resource usage
+                if cpu_usage > 80 or memory_usage > 80:  # High resource usage
+                    self.adjust_thread_pool()  # Adjust the thread pool
+                    time.sleep(5)  # Check more frequently under high load
+                elif cpu_usage > 50 or memory_usage > 50:  # Moderate resource usage
+                    self.adjust_thread_pool()  # Adjust the thread pool
+                    time.sleep(10)  # Moderate check interval
+                else:
+                    time.sleep(20)  # Check less frequently under idle conditions
             except Exception as e:
                 self.logger.error(f"Thread pool monitor error: {e}")
-                time.sleep(self.thread_scaling_interval)
+                time.sleep(10)  # Sleep for a default interval if there's an error
+
 
     # MQTT callbacks (on_connect, on_disconnect, etc.) remain the same
     def on_connect(self, client, userdata, flags, rc):
@@ -248,20 +260,34 @@ class OptimizedCentralHub:
         while self.running:
             try:
                 if self.connection_active:
-                    available_memory_mb = psutil.virtual_memory().available / (1024 * 1024)
+                    available_memory_mb = psutil.virtual_memory().available / (1024 * 1024)  # Available memory in MB
+                    total_memory_mb = psutil.virtual_memory().total / (1024 * 1024)  # Total memory in MB
+                    disk_usage = psutil.disk_usage('/').percent  # Disk usage percentage
+                    load_avg = os.getloadavg()  # System load averages for 1, 5, and 15 minutes
+                    network_io = psutil.net_io_counters()  # Network I/O stats
+                    swap_memory = psutil.swap_memory()  # Swap memory usage
+
                     heartbeat_msg = {
                         'timestamp': datetime.now().isoformat(),
                         'status': 'alive',
                         'cpu': psutil.cpu_percent(),
                         'memory': psutil.virtual_memory().percent,
-                        'available_memory': available_memory_mb
+                        'available_memory': available_memory_mb,
+                        'total_memory': total_memory_mb,
+                        'disk_usage': disk_usage,
+                        'load_average': load_avg,
+                        'network_in': network_io.bytes_recv,  # Total received bytes
+                        'network_out': network_io.bytes_sent,  # Total sent bytes
+                        'swap_used': swap_memory.percent  # Swap memory usage
                     }
-                    self.client.publish('hub/heartbeat', json.dumps(heartbeat_msg), qos=1)
+
+                    self.client.publish_with_retry('hub/heartbeat', json.dumps(heartbeat_msg), qos=1)
                     self.logger.debug("Heartbeat sent")
                 time.sleep(30)
             except Exception as e:
                 self.logger.error(f"Heartbeat error: {e}")
                 time.sleep(30)
+
 
     def on_message(self, client, userdata, message):
         try:
@@ -328,43 +354,41 @@ class OptimizedCentralHub:
         self.logger.info(f"Audio Alert: {phrase}")
 
     def handle_fall_alert(self, payload):
-        mediapipe_state = payload.get('mediapipe_state')
+        mediapipe_state = payload.get('mediapipe_state','No fall detected (Standing, Sitting, Lying Down)')
         timestamp = payload.get('timestamp', datetime.now().isoformat())
         source = payload.get('source', 'video')
         camera_state = payload.get('cameraState', False)  # True for activated, False for deactivated
-        print(f"FALL DETECTED: {mediapipe_state}")
-
+        print(f"Patient state: {mediapipe_state}")
+        priority = 'HIGH' if mediapipe_state == 'Fallen out of bed' else 'MEDIUM'
         # Creating alert data for fall detection
         alert_data = {
             'timestamp': timestamp,
             'alert_type': 'FALL_DETECTED',
             'source': source,
             'details': mediapipe_state,
-            'priority': 'HIGH'
+            'priority': priority
         }
         
         # Publish fall detection alert
         self.publish_qos2('nurse/dashboard', alert_data)
         
-        # Logic for handling camera activation/deactivation based on 'cameraState'
-        if camera_state:
-            # If camera is to be activated (True), send activation alert
-            dashboard_camera_activation_alert = {
+        # Only send camera state change if it's different from the last state
+        if camera_state != self._last_camera_state:
+            # Update the tracked state
+            self._last_camera_state = camera_state
+            
+            # Send camera activation/deactivation message
+            dashboard_camera_state_alert = {
                 'timestamp': timestamp,
                 'source': 'camera_activation',
                 'activate': camera_state
             }
-            self.publish_qos2('nurse/dashboard', dashboard_camera_activation_alert)
-            print(f"Camera activated due to fall detection at {timestamp}")
+            self.publish_qos2('nurse/dashboard', dashboard_camera_state_alert)
+            print(f"Camera {'activated' if camera_state else 'deactivated'} at {timestamp}")
+            self.logger.info(f"Camera state changed to {'activated' if camera_state else 'deactivated'}")
         else:
-            # If camera is to be deactivated (False), send deactivation alert
-            dashboard_camera_deactivation_alert = {
-                'timestamp': timestamp,
-                'source': 'camera_activation',
-                'activate': camera_state
-            }
-            self.publish_qos2('nurse/dashboard', dashboard_camera_deactivation_alert)
-            print(f"Camera deactivated after fall detection at {timestamp}")
+            print(f"Camera state unchanged ({camera_state}), not sending update")
+            self.logger.debug(f"Camera state unchanged ({camera_state}), not sending update")
 
     def handle_proximity_alert(self, payload):
         try:
@@ -377,21 +401,13 @@ class OptimizedCentralHub:
                 'timestamp': timestamp,
                 'alert_type': 'PROXIMITY_DATA',
                 'source': source,
-                'details':details,
+                'details': details,
                 'distances': distances,
                 'priority': 'LOW'
             }
             self.publish_with_retry('nurse/dashboard', proximity_data)
+             # Always send patient out-of-bed alert if applicable
             if out_of_bed:
-                video_activate_alert = {'activate': True,
-                       'timestamp': timestamp,  
-                       'source': source}
-                dashboard_camera_activation_alert = {
-                       'timestamp': timestamp,  
-                       'source': 'camera_activation',
-                       'activate': True}
-                self.publish_qos2('video/monitor', video_activate_alert)
-                self.publish_qos2('nurse/dashboard', dashboard_camera_activation_alert)
                 alert_data = {
                     'timestamp': timestamp,
                     'alert_type': 'PATIENT_OUT_OF_BED',
@@ -401,16 +417,39 @@ class OptimizedCentralHub:
                 }
                 self.publish_qos2('nurse/dashboard', alert_data)
                 self.logger.info("Out-of-bed alert sent")
+
+            # Determine the desired camera state based on out_of_bed status
+            camera_state = out_of_bed  # True if out of bed, False otherwise
+            
+            # Only send camera state change if it's different from the last state
+            if camera_state != self._last_camera_state:
+                # Update the tracked state
+                self._last_camera_state = camera_state
+                
+                # Common message for both video/monitor and nurse/dashboard
+                camera_state_msg = {
+                    'timestamp': timestamp,
+                    'source': source,
+                    'activate': camera_state
+                }
+                
+                # Send to video/monitor
+                self.publish_qos2('video/monitor', camera_state_msg)
+                
+                # Send to nurse/dashboard
+                dashboard_camera_state_alert = {
+                    'timestamp': timestamp,
+                    'source': 'camera_activation',
+                    'activate': camera_state
+                }
+                self.publish_qos2('nurse/dashboard', dashboard_camera_state_alert)
+                
+                print(f"Camera {'activated' if camera_state else 'deactivated'} at {timestamp}")
+                self.logger.info(f"Camera state changed to {'activated' if camera_state else 'deactivated'}")
             else:
-                video_deactivate_alert = {'activate': False,
-                       'timestamp': timestamp,  
-                       'source': source}
-                dashboard_camera_deactivation_alert = {
-                       'timestamp': timestamp,  
-                       'source': 'camera_activation',
-                       'activate': False}
-                self.publish_qos2('video/monitor', video_deactivate_alert)
-                self.publish_qos2('nurse/dashboard', dashboard_camera_deactivation_alert)
+                print(f"Camera state unchanged ({camera_state}), not sending update")
+                self.logger.debug(f"Camera state unchanged ({camera_state}), not sending update")
+            
         except Exception as e:
             print(f"✗ Proximity alert error: {e}")
             self.logger.error(f"Proximity alert error: {e}")
