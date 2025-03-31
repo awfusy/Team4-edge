@@ -213,7 +213,8 @@ def generate_frames():
                     mqtt_data = {
                         "timestamp": datetime.now().isoformat(),
                         "mediapipe_state": mqttDataMP,
-                        "source": "video"
+                        "source": "video",
+                        "cameraState": camera_active
                     }
                     executor.submit(client.publish, MQTT_TOPIC, json.dumps(mqtt_data), 2)
                     print(f"Fall alert sent via MQTT: State={mqttDataMP}")
