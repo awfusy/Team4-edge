@@ -14,10 +14,10 @@ from concurrent.futures import ThreadPoolExecutor
 # WebSocket client setup
 sio = socketio.Client()
 try:
-    sio.connect('http://192.168.61.139:5000')  # Replace with your Flask server's IP
-    print("WebSocket connected")
+	sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server IP
+	print("WebSocket connected")
 except Exception as e:
-    print(f"WebSocket connection failed: {e}")
+	print(f"WebSocket connection failed: {e}")
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -84,10 +84,15 @@ def on_message(client, userdata, message):
                 # ✅ Otherwise, update state
                 camera_active = activate
                 print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+                if activate:                    
+                    try:
+                        sio.connect('http://192.168.61.139:5000')
+                        print("WebSocket connnected")
+                    except Exception as e:
+                        print(f"WebSocket connection failed: {e}")     
 
-                if activate:
-                    # If the source is "audio", set the timer
-                    if source == "audio":
+					# If the source is "audio", set the timer
+                    if source == "audio":						
                         if video_timer and video_timer.is_alive():
                             video_timer.cancel()  # Cancel any existing timer
                         video_timer = threading.Timer(20, stop_video_after_timeout)
@@ -96,11 +101,15 @@ def on_message(client, userdata, message):
 
                     # If the source is "proximity", no timeout is set
                     elif source == "proximity":
+
                         if video_timer and video_timer.is_alive():
                             video_timer.cancel()  # Cancel any existing timer
                         print("Camera activated via proximity sensor, no timeout set.")
 
                     # Publish the camera activation state after it has been updated
+                    print(source)
+                    print("activateee State", activate)
+                    print("camera_activate State", camera_active)
                     camerastate_data = {
                         'timestamp': datetime.now().isoformat(),
                         'source': source,
@@ -259,6 +268,7 @@ def generate_frames():
                     _, jpeg = cv2.imencode('.jpg', frame)
                     encoded_frame = base64.b64encode(jpeg).decode('utf-8')
                     executor.submit(sio.emit, 'video_frame', encoded_frame)
+                print(sio.connected)
 
             except Exception as e:
                 print(f"Error processing frame: {e}")
