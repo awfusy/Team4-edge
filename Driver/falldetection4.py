@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 # WebSocket client setup
 sio = socketio.Client()
 try:
-    sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server's IP
+    sio.connect('http://192.168.61.139:5000')  # Replace with your Flask server's IP
     print("WebSocket connected")
 except Exception as e:
     print(f"WebSocket connection failed: {e}")
@@ -35,7 +35,7 @@ KEYPOINTS = {
 }
 
 # MQTT Configuration
-MQTT_BROKER = "192.168.18.138"
+MQTT_BROKER = "192.168.61.254"
 MQTT_PORT = 1883
 MQTT_TOPIC = "video/emergency"
 
@@ -53,7 +53,13 @@ def stop_video_after_timeout():
     global camera_active
     with video_timer_lock:
         camera_active = False
-        print("Camera deactivated after 5-minute timeout")
+        print("Camera deactivated after 10 seconds timeout")
+        camerastate_data = {
+            "timestamp": datetime.now().isoformat(),
+            "source": "video",
+            "cameraState": camera_active
+        }
+        executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
@@ -62,16 +68,56 @@ def on_message(client, userdata, message):
         payload = json.loads(message.payload.decode('utf-8'))
         if message.topic == "video/monitor":
             with camera_state_lock:
+                source = payload.get('source', '')
                 activate = payload.get('activate', False)
+
+                # ✅ Ignore activation if already active
+                if activate and camera_active:
+                    print("Camera activation ignored — already active")
+                    return
+                
+                # ✅ Ignore deactivation if already inactive
+                if not activate and not camera_active:
+                    print("Camera deactivation ignored — already inactive")
+                    return
+                
+                # ✅ Otherwise, update state
                 camera_active = activate
                 print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+
                 if activate:
-                    if video_timer and video_timer.is_alive():
-                        video_timer.cancel()
-                    video_timer = threading.Timer(300, stop_video_after_timeout)
-                    video_timer.start()
+                    # If the source is "audio", set the timer
+                    if source == "audio":
+                        if video_timer and video_timer.is_alive():
+                            video_timer.cancel()  # Cancel any existing timer
+                        video_timer = threading.Timer(20, stop_video_after_timeout)
+                        video_timer.start()
+                        print("Camera will deactivate after timeout (20s) due to audio trigger.")
+
+                    # If the source is "proximity", no timeout is set
+                    elif source == "proximity":
+                        if video_timer and video_timer.is_alive():
+                            video_timer.cancel()  # Cancel any existing timer
+                        print("Camera activated via proximity sensor, no timeout set.")
+
+                    # Publish the camera activation state after it has been updated
+                    camerastate_data = {
+                        'timestamp': datetime.now().isoformat(),
+                        'source': source,
+                        'cameraState': camera_active
+                    }
+                    executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
+                else:
+                    # Publish deactivation message if camera is deactivated
+                    camerastate_data = {
+                        'timestamp': datetime.now().isoformat(),
+                        'source': source,
+                        'cameraState': camera_active
+                    }
+                    executor.submit(client.publish, MQTT_TOPIC, json.dumps(camerastate_data), 2)
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
+
 
 # Initialize MQTT client
 client = mqtt.Client()
@@ -204,7 +250,7 @@ def generate_frames():
                     mqtt_data = {
                         "timestamp": datetime.now().isoformat(),
                         "mediapipe_state": mqttDataMP,
-                        "source": "video"
+                        "source": "video",
                     }
                     executor.submit(client.publish, MQTT_TOPIC, json.dumps(mqtt_data), 2)
                     print(f"Fall alert sent via MQTT: State={mqttDataMP}")

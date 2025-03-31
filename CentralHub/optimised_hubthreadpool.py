@@ -12,7 +12,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 class OptimizedCentralHub:
-    def __init__(self, broker_address='192.168.18.138', broker_port=1883, reconnect_delay=2, publish_retry_delay=1):
+    def __init__(self, broker_address='192.168.61.254', broker_port=1883, reconnect_delay=2, publish_retry_delay=1):
         self.client_id = "CentralHub"
         self.client = mqtt.Client(client_id=self.client_id, clean_session=False)
         
@@ -135,7 +135,8 @@ class OptimizedCentralHub:
         subscription_list = [(topic, qos) for topic, qos in self.topics.items()]
         result, mid = self.client.subscribe(subscription_list)
         if result == mqtt.MQTT_ERR_SUCCESS:
-            print(f"Subscribed to {len(subscription_list)} topics")
+            topic_list_str = ", ".join(f"{topic} (QoS: {qos})" for topic, qos in self.topics.items())
+            print(f"Subscribed to {len(subscription_list)} topics: {topic_list_str}")
             self.logger.info(f"Subscribed to topics: {', '.join(self.topics.keys())}")
         else:
             print(f"Failed to subscribe: {result}")
@@ -299,13 +300,20 @@ class OptimizedCentralHub:
                 gc.collect()
 
     def handle_audio_alert(self, payload):
-        video_alert = {'activate': True}
+        timestamp = payload.get('timestamp', datetime.now().isoformat())
+        source = payload.get('source', 'audio')
+
+        video_alert = {'activate': True,
+                       'timestamp': timestamp,  
+                       'source': source}
+        dashboard_camera_activation_alert = {'activate': True,
+                       'timestamp': timestamp,  
+                       'source': 'camera_activation'}               
         self.publish_qos2('video/monitor', video_alert)
+        self.publish_qos2('nurse/dashboard', dashboard_camera_activation_alert)
         phrase = payload.get('phrase', '')
         alert_type = payload.get('alert_type')
         confidence = payload.get('confidence')
-        timestamp = payload.get('timestamp', datetime.now().isoformat())
-        source = payload.get('source', 'audio')
         print(f"Audio Alert: {alert_type}")
         priority = 'HIGH' if alert_type in ['Urgent Assistance', 'Pain/Discomfort'] else 'MEDIUM'
         alert_data = {
@@ -323,16 +331,40 @@ class OptimizedCentralHub:
         mediapipe_state = payload.get('mediapipe_state')
         timestamp = payload.get('timestamp', datetime.now().isoformat())
         source = payload.get('source', 'video')
+        camera_state = payload.get('cameraState', False)  # True for activated, False for deactivated
         print(f"FALL DETECTED: {mediapipe_state}")
+
+        # Creating alert data for fall detection
         alert_data = {
             'timestamp': timestamp,
             'alert_type': 'FALL_DETECTED',
             'source': source,
-            'details': f"Patient fallen (MediaPipe: {mediapipe_state})",
+            'details': mediapipe_state,
             'priority': 'HIGH'
         }
+        
+        # Publish fall detection alert
         self.publish_qos2('nurse/dashboard', alert_data)
-        self.logger.info("Fall Alert Sent")
+        
+        # Logic for handling camera activation/deactivation based on 'cameraState'
+        if camera_state:
+            # If camera is to be activated (True), send activation alert
+            dashboard_camera_activation_alert = {
+                'timestamp': timestamp,
+                'source': 'camera_activation',
+                'activate': camera_state
+            }
+            self.publish_qos2('nurse/dashboard', dashboard_camera_activation_alert)
+            print(f"Camera activated due to fall detection at {timestamp}")
+        else:
+            # If camera is to be deactivated (False), send deactivation alert
+            dashboard_camera_deactivation_alert = {
+                'timestamp': timestamp,
+                'source': 'camera_activation',
+                'activate': camera_state
+            }
+            self.publish_qos2('nurse/dashboard', dashboard_camera_deactivation_alert)
+            print(f"Camera deactivated after fall detection at {timestamp}")
 
     def handle_proximity_alert(self, payload):
         try:
@@ -340,17 +372,26 @@ class OptimizedCentralHub:
             distances = payload.get('distances', [])
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'proximity')
+            details = 'Out of bed' if out_of_bed else 'Still in bed'
             proximity_data = {
                 'timestamp': timestamp,
                 'alert_type': 'PROXIMITY_DATA',
                 'source': source,
+                'details':details,
                 'distances': distances,
                 'priority': 'LOW'
             }
             self.publish_with_retry('nurse/dashboard', proximity_data)
             if out_of_bed:
-                video_alert = {'activate': True}
-                self.publish_qos2('video/monitor', video_alert)
+                video_activate_alert = {'activate': True,
+                       'timestamp': timestamp,  
+                       'source': source}
+                dashboard_camera_activation_alert = {
+                       'timestamp': timestamp,  
+                       'source': 'camera_activation',
+                       'activate': True}
+                self.publish_qos2('video/monitor', video_activate_alert)
+                self.publish_qos2('nurse/dashboard', dashboard_camera_activation_alert)
                 alert_data = {
                     'timestamp': timestamp,
                     'alert_type': 'PATIENT_OUT_OF_BED',
@@ -361,8 +402,15 @@ class OptimizedCentralHub:
                 self.publish_qos2('nurse/dashboard', alert_data)
                 self.logger.info("Out-of-bed alert sent")
             else:
-                video_alert = {'activate': False}
-                self.publish_qos2('video/monitor', video_alert)
+                video_deactivate_alert = {'activate': False,
+                       'timestamp': timestamp,  
+                       'source': source}
+                dashboard_camera_deactivation_alert = {
+                       'timestamp': timestamp,  
+                       'source': 'camera_activation',
+                       'activate': False}
+                self.publish_qos2('video/monitor', video_deactivate_alert)
+                self.publish_qos2('nurse/dashboard', dashboard_camera_deactivation_alert)
         except Exception as e:
             print(f"✗ Proximity alert error: {e}")
             self.logger.error(f"Proximity alert error: {e}")

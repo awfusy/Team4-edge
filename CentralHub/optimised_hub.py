@@ -11,7 +11,7 @@ import psutil
 import os
 
 class OptimizedCentralHub:
-    def __init__(self, broker_address='192.168.211.254', broker_port=1883, reconnect_delay=2, publish_retry_delay=1):
+    def __init__(self, broker_address='192.168.61.254', broker_port=1883, reconnect_delay=2, publish_retry_delay=1):
         self.client_id = "CentralHub"
         self.client = mqtt.Client(client_id=self.client_id, clean_session=False)
         
@@ -126,7 +126,8 @@ class OptimizedCentralHub:
         result, mid = self.client.subscribe(subscription_list)
         
         if result == mqtt.MQTT_ERR_SUCCESS:
-            print(f"Subscribed to {len(subscription_list)} topics")
+            topic_list_str = ", ".join(f"{topic} (QoS: {qos})" for topic, qos in self.topics.items())
+            print(f"Subscribed to {len(subscription_list)} topics: {topic_list_str}")
             self.logger.info(f"Subscribed to topics: {', '.join(self.topics.keys())}")
         else:
             print(f"Failed to subscribe: {result}")
@@ -360,7 +361,7 @@ class OptimizedCentralHub:
             'timestamp': timestamp,
             'alert_type': 'FALL_DETECTED',
             'source': source,
-            'details': f"Patient fallen (MediaPipe: {mediapipe_state})",
+            'details': mediapipe_state,
             'priority': 'HIGH'
         }
         self.publish_qos2('nurse/dashboard', alert_data)
@@ -372,12 +373,13 @@ class OptimizedCentralHub:
             distances = payload.get('distances', [])  
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'proximity')
-            
+            details = 'Out of bed' if out_of_bed else 'Still in bed'
             proximity_data = {
                 'timestamp': timestamp,
                 'alert_type': 'PROXIMITY_DATA',
                 'source': source,
                 'distances': distances,
+                'details': details,
                 'priority': 'LOW'
             }
             self.publish_with_retry('nurse/dashboard', proximity_data)
@@ -394,9 +396,6 @@ class OptimizedCentralHub:
                 }
                 self.publish_qos2('nurse/dashboard', alert_data)
                 self.logger.info("Out-of-bed alert sent")
-            else:
-                video_alert = {'activate': False}
-                self.publish_qos2('video/monitor', video_alert)
         except Exception as e:
             print(f"✗ Proximity alert error: {e}")
             self.logger.error(f"Proximity alert error: {e}")
