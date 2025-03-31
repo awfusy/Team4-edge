@@ -22,3 +22,11 @@ pip install sounddevice
 pip install tflite-runtime
 
 pip install mediapipe
+
+#mqtt client
+pip install paho-mqtt
+
+#psutil - CPU and memory usage for central hub
+pip install psutil
+
+

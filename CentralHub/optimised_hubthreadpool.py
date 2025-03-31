@@ -281,7 +281,7 @@ class OptimizedCentralHub:
                         'swap_used': swap_memory.percent  # Swap memory usage
                     }
 
-                    self.client.publish('hub/heartbeat', json.dumps(heartbeat_msg), qos=1)
+                    self.client.publish_with_retry('hub/heartbeat', json.dumps(heartbeat_msg), qos=1)
                     self.logger.debug("Heartbeat sent")
                 time.sleep(30)
             except Exception as e:
