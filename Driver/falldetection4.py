@@ -62,6 +62,7 @@ def on_message(client, userdata, message):
         payload = json.loads(message.payload.decode('utf-8'))
         if message.topic == "video/monitor":
             with camera_state_lock:
+                source = payload.get('source', '')
                 activate = payload.get('activate', False)
 
                 # ✅ Ignore activation if already active
@@ -74,10 +75,16 @@ def on_message(client, userdata, message):
                 print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
 
                 if activate:
-                    if video_timer and video_timer.is_alive():
-                        video_timer.cancel()
-                    video_timer = threading.Timer(20, stop_video_after_timeout)
-                    video_timer.start()
+                    if source == "audio":
+                        if video_timer and video_timer.is_alive():
+                            video_timer.cancel()
+                        video_timer = threading.Timer(20, stop_video_after_timeout)
+                        video_timer.start()
+                        print("Camera will deactivate after timeout (20s) due to audio trigger.")
+                    elif source == "proximity":
+                        if video_timer and video_timer.is_alive():
+                            video_timer.cancel()  # Ensure no timeout is running
+                        print("Camera activated via proximity sensor, no timeout set.")
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
 
