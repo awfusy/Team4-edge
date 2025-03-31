@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 
 class SimplifiedCentralHub:
-    def __init__(self, broker_address='192.168.18.138', broker_port=1883, reconnect_delay=3, publish_retry_delay=1):
+    def __init__(self, broker_address='192.168.61.254', broker_port=1883, reconnect_delay=3, publish_retry_delay=1):
         # MQTT Client Setup with clean_session=False for reliability
         self.client_id = "CentralHub"
         self.client = mqtt.Client(client_id=self.client_id, clean_session=False)
@@ -75,7 +75,8 @@ class SimplifiedCentralHub:
             try:
                 result, _ = self.client.subscribe(topic, qos)  # Unpack the tuple
                 if result == mqtt.MQTT_ERR_SUCCESS:  # Check result[0]
-                    print(f"Subscribed to {topic} with QoS {qos}")  # Simple console feedback
+                    topic_list_str = ", ".join(f"{topic} (QoS: {qos})" for topic, qos in self.topics.items())
+                    print(f"Subscribed to {len(subscription_list)} topics: {topic_list_str}")
                     self.logger.info(f"Subscribed to {topic} with QoS {qos}")
                 else:
                     print(f"Failed to subscribe to {topic}")  # Added print
@@ -216,7 +217,7 @@ class SimplifiedCentralHub:
                     'timestamp': timestamp,  # Use current time
                     'alert_type': 'FALL_DETECTED',
                     'source': source,
-                    'details': f"Patient fallen out of bed (MediaPipe: {mediapipe_state})",
+                    'details': mediapipe_state,
                     'priority': 'HIGH'
                 }
                 
@@ -244,13 +245,14 @@ class SimplifiedCentralHub:
             distances = payload.get('distances', [])  
             timestamp = payload.get('timestamp', datetime.now().isoformat())
             source = payload.get('source', 'proximity')
-            
+            details = 'Out of bed' if out_of_bed else 'Still in bed'
             # Always send proximity data
             proximity_data = {
                 'timestamp': timestamp,  # Use CURRENT time for outgoing messages
                 'alert_type': 'PROXIMITY_DATA',
                 'source': source,
                 'distances': distances,
+                'details':details,
                 'priority': 'LOW'
             }
             self.publish_with_retry('nurse/dashboard', proximity_data)
@@ -278,11 +280,6 @@ class SimplifiedCentralHub:
                 else:
                     print(f"✗ Failed to publish out-of-bed alert: {result.rc}")
                     self.logger.error(f"Failed to publish out-of-bed alert: {result.rc}")
-            else:
-                # Deactivate video
-                video_alert = {'activate': False}
-                self.client.publish('video/monitor', json.dumps(video_alert), qos=2)
-                print(f"✓ Video deactivation published")
         
         except Exception as e:
             print(f"✗ Proximity alert error: {e}")
