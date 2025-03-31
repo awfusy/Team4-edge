@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 # WebSocket client setup
 sio = socketio.Client()
 try:
-    sio.connect('http://192.168.18.49:5000')  # Replace with your Flask server's IP
+    sio.connect('http://192.168.61.139:5000')  # Replace with your Flask server's IP
     print("WebSocket connected")
 except Exception as e:
     print(f"WebSocket connection failed: {e}")
@@ -35,7 +35,7 @@ KEYPOINTS = {
 }
 
 # MQTT Configuration
-MQTT_BROKER = "192.168.18.138"
+MQTT_BROKER = "192.168.61.254"
 MQTT_PORT = 1883
 MQTT_TOPIC = "video/emergency"
 
@@ -53,7 +53,7 @@ def stop_video_after_timeout():
     global camera_active
     with video_timer_lock:
         camera_active = False
-        print("Camera deactivated after 5-minute timeout")
+        print("Camera deactivated after 10 seconds timeout")
 
 # MQTT subscriber setup
 def on_message(client, userdata, message):
@@ -63,15 +63,24 @@ def on_message(client, userdata, message):
         if message.topic == "video/monitor":
             with camera_state_lock:
                 activate = payload.get('activate', False)
+
+                # ✅ Ignore activation if already active
+                if activate and camera_active:
+                    print("Camera activation ignored — already active")
+                    return
+
+                # ✅ Otherwise, update state
                 camera_active = activate
                 print(f"Camera {'activated' if camera_active else 'deactivated'} via MQTT")
+
                 if activate:
                     if video_timer and video_timer.is_alive():
                         video_timer.cancel()
-                    video_timer = threading.Timer(300, stop_video_after_timeout)
+                    video_timer = threading.Timer(20, stop_video_after_timeout)
                     video_timer.start()
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
+
 
 # Initialize MQTT client
 client = mqtt.Client()
