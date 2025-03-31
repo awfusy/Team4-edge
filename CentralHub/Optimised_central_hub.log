@@ -719,3 +719,8 @@
 2025-03-29 23:38:35,173 - INFO: Fall Alert Sent
 2025-03-29 23:38:35,174 - INFO: QoS 2 to nurse/dashboard (0.74ms)
 2025-03-29 23:38:36,174 - INFO: QoS 2 to nurse/dashboard (0.41ms)
+2025-03-29 23:41:21,335 - INFO: Shutting down via interrupt...
+2025-03-31 09:56:27,390 - INFO: Queue sizes - Message: 100, Proximity: 100, QoS 2: 100
+2025-03-31 09:56:32,407 - ERROR: Startup error: timed out
+2025-03-31 09:56:32,408 - ERROR: Fatal error: timed out
+2025-03-31 09:56:36,409 - INFO: Central Hub stopped cleanly
