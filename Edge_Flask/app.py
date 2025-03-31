@@ -79,17 +79,22 @@ def add_alert(alert_data):
 
 mqtt_client = mqtt.Client()
 
-patient_names = ["Alice Tan", "John Lim", "Maria Gomez", "David Chen", "Nora Ali"]
-room_numbers = ["Ward 1A", "Ward 2B", "ICU 3", "Room 4D", "Emergency Room"]
+patient_names = ["Alice Tan"]
+room_numbers = ["Ward 1A"]
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with code:", rc)
     client.subscribe("nurse/dashboard")
+    # client.subscribe("hub/heartbeat")
 
 def on_message(client, userdata, msg):
     try:
         raw = json.loads(msg.payload.decode())
         print(f"MQTT message received on topic '{msg.topic}': {raw}")
+
+        # if msg.topic == "hub/heartbeat":
+        #     print("📡 Received heartbeat:", raw)
+        #     socketio.emit("hub_stats_update", raw)
 
         # Extract details
         timestamp = raw.get("timestamp", "")
@@ -97,7 +102,16 @@ def on_message(client, userdata, msg):
         source = raw.get("source", "Unknown")
         details = raw.get("details", "No details provided.")
         priority = raw.get("priority", "MEDIUM")
+        distances = raw.get("distances", [])
 
+        if source.lower() == 'camera_activation':
+            activate = raw.get("activate", False)
+            socketio.emit('camera_activation', {
+                'activate': activate
+            })
+            print(f"📷 Camera activation set to {activate}")
+            return
+    
         patient_name = random.choice(patient_names)
         room_no = random.choice(room_numbers)
         in_bed = "No" if "out" in alert_type.lower() or "fall" in alert_type.lower() else "Yes"
@@ -110,12 +124,15 @@ def on_message(client, userdata, msg):
     f"📡 Source              : {source.capitalize()}\n"
     f"🏥 Room No             : {room_no}\n"
     f"⚠️ Emergency Level     : {priority}\n"
-    f"🔔 Alert Type          : {alert_type}\n"
     f"🩺 Patient Condition   : {details}\n"
     f"🛏️ Still in Bed        : {in_bed}\n"
-    f"⏰ Timestamp           : {formatted_time}"
 )
+        
+        # Add distance if source is proximity
+        if source.lower() == "proximity":
+            message += f"📏 Distance            : {distances}\n"
 
+        message += f"⏰ Timestamp           : {formatted_time}"
 
         # Emit to dashboard immediately
         socketio.emit('new_notification', {
@@ -132,7 +149,7 @@ mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
 try:
-    mqtt_client.connect("test.mosquitto.org", 1883, 60)
+    mqtt_client.connect("192.168.61.254", 1883, 60)
     mqtt_client.loop_start()
 except Exception as e:
     print(f"Failed to connect to MQTT broker: {e}")
@@ -186,15 +203,21 @@ def acknowledge_alert(alert_index):
         print(f"Error acknowledging alert: {e}")
     return jsonify({'success': False}), 400
 
-@app.route('/video_feed')
-def video_feed():
-    return render_template('video_stream.html')
 
 @socketio.on('video_frame')
 def handle_video_frame(data):
     global latest_frame
     latest_frame = data
+    print("📷 Received video_frame and broadcasting update_frame")
     socketio.emit('update_frame', latest_frame)
+
+@socketio.on('request_latest_frame')
+def handle_frame_request():
+    if latest_frame:
+        emit('update_frame', latest_frame)
+    else:
+        print("No frame available to send")
+
 
 @socketio.on('connect')
 def test_connect():

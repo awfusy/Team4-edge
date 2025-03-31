@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Patient Monitoring Dashboard</title>
-    <link rel="icon" href="{{ url_for('static', filename='sounds/hospital.png') }}" type="image/png">
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='sounds/hospital.png') }}"
+      type="image/png"
+    />
     <style>
       /* Basic Reset */
       * {
@@ -175,13 +179,27 @@
           </div>
           {% endfor %}
         </div>
+        <!-- <h2>Hub Statistics</h2> -->
+        <!-- <div class="state-box" id="hub-stats">
+          <p><strong>CPU Usage:</strong> <span id="cpu-usage">--</span>%</p>
+          <p>
+            <strong>Memory Usage:</strong> <span id="memory-usage">--</span>%
+          </p>
+          <p>
+            <strong>Available Memory:</strong>
+            <span id="available-memory">--</span> MB
+          </p>
+          <p><strong>Status:</strong> <span id="hub-status">--</span></p>
+          <p>
+            <strong>Last Update:</strong> <span id="hub-timestamp">--</span>
+          </p>
+        </div> -->
       </div>
     </div>
     <!-- ✅ Closes the dashboard-container -->
 
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
-
       const socket = io();
       const stream = document.getElementById("dashboard-stream");
       const placeholder = document.getElementById("stream-placeholder");
@@ -199,7 +217,12 @@
 
         const currentStatus = statusText.textContent.trim();
 
-        const knownStatuses = ["Emergency", "Needs Assistance", "Normal"];
+        const knownStatuses = [
+          "Emergency",
+          "Needs Assistance",
+          "Normal",
+          "Pending",
+        ];
 
         if (!streamActive) {
           statusElement.classList.remove(
@@ -219,28 +242,40 @@
         placeholder.style.display = "flex"; // Must match the CSS flex display
         streamActive = false;
         streamStartTime = null;
-        console.log("Stream stopped after 5 mins");
       }
 
-      socket.on("update_frame", function (data) {
-        // Update the frame
-        stream.src = "data:image/jpeg;base64," + data;
+      let streamingEnabled = false;
 
-        // If stream wasn't active, start it and set timeout
+      socket.on("camera_activation", function (data) {
+        streamingEnabled = data.activate;
+        console.log("streamingEnabled: ", streamingEnabled);
+
+        if (!streamingEnabled) {
+          stopStream();
+          console.log("🛑 Live stream disabled via MQTT");
+        } else {
+          //streamingEnabled = true;
+          //socket.emit("request_latest_frame");
+          console.log("streamActive", streamActive);
+          console.log("🎥 Live stream enabled via MQTT");
+        }
+      });
+
+      socket.on("update_frame", function (data) {
+        console.log("⚠️ Received frame");
+        console.log("streamingEnabled:", streamingEnabled);
+        console.log("streamActive:", streamActive);
+
+        console.log("Received update_frame with data length:", data.length);
+        //if (!streamingEnabled) return;
+
+        stream.src = "data:image/jpeg;base64," + data;
+        console.log("streamActive", streamActive);
         if (!streamActive) {
           stream.style.display = "block";
           placeholder.style.display = "none";
           streamActive = true;
           streamStartTime = Date.now();
-
-          // Set single timeout that won't reset
-          clearTimeout(streamTimeout);
-          streamTimeout = setTimeout(stopStream, 300000);
-        }
-
-        // Force stop if more than 10 seconds have passed
-        if (streamStartTime && Date.now() - streamStartTime >= 300000) {
-          stopStream();
         }
       });
 
@@ -263,7 +298,8 @@
         statusElement.classList.remove(
           "status-emergency",
           "status-attention",
-          "status-normal"
+          "status-normal",
+          "status-pending"
         );
 
         // Stop any currently playing audio
@@ -288,17 +324,40 @@
         } else {
           alertBox.classList.add("alert-low");
           document.getElementById("low-sound").play();
-
           statusElement.classList.add("status-normal");
           statusText.textContent = "Normal";
         }
 
         alertBox.innerHTML = `
-    <pre style="white-space: pre-wrap;">${data.message}</pre>
-  `;
+  <pre style="white-space: pre-wrap;">${data.message}</pre>
+`;
+
 
         document.querySelector(".alert-list").prepend(alertBox);
       });
+
+      // socket.on("hub_stats_update", function (data) {
+      //   console.log("📡 Hub Stats Received:", data);
+
+      //   document.getElementById("cpu-usage").textContent = data.cpu || "--";
+      //   document.getElementById("memory-usage").textContent =
+      //     data.memory || "--";
+      //   document.getElementById("available-memory").textContent =
+      //     data.available_memory || "--";
+      //   document.getElementById("hub-status").textContent = data.status || "--";
+      //   document.getElementById("hub-timestamp").textContent =
+      //     data.timestamp || "--";
+
+      //   // Optional: you can add color based on status
+      //   const hubBox = document.getElementById("hub-stats");
+      //   hubBox.style.borderLeft =
+      //     "4px solid " +
+      //     (data.status === "alive"
+      //       ? "#4caf50"
+      //       : data.status === "warning"
+      //       ? "#ff9800"
+      //       : "#f44336");
+      // });
     </script>
     <!-- Audio Alerts -->
     <audio
