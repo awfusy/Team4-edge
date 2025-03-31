@@ -1,16 +1,13 @@
 import eventlet
 
-# Monkey patching must come first
+# Monkey patching must come first to enable non-blocking I/O
 eventlet.monkey_patch()
 
 from collections import deque
-from flask import Flask, render_template, Response, jsonify, request
-import cv2
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import json
-import threading
 import paho.mqtt.client as mqtt  # MQTT temporarily disabled
-import random
 from datetime import datetime
 
 app = Flask(__name__)
@@ -49,9 +46,11 @@ dashboard_data = {
     'room_number': '101'
 }
 
+# Helper function to add alerts into dashboard_data structure
 def add_alert(alert_data):
     priority = alert_data.get('priority', 'LOW').upper()
     source = alert_data.get('source', '')
+    # Update current sensor state
     if source == 'video':
         dashboard_data['current_states']['video'].update({
             'details': alert_data.get('details'),
@@ -70,6 +69,7 @@ def add_alert(alert_data):
             'last_reading': alert_data.get('timestamp')
         })
 
+    # Add alert to appropriate queue
     if priority == 'HIGH':
         dashboard_data['alerts']['high_priority'].appendleft(alert_data)
     elif priority == 'MEDIUM':
@@ -77,26 +77,25 @@ def add_alert(alert_data):
     else:
         dashboard_data['alerts']['low_priority'].appendleft(alert_data)
 
+# MQTT client setup
 mqtt_client = mqtt.Client()
+
 
 patient_names = ["Alice Tan"]
 room_numbers = ["Ward 1A"]
 
+# MQTT connection callback
 def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with code:", rc)
     client.subscribe("nurse/dashboard")
-    # client.subscribe("hub/heartbeat")
 
+# MQTT message handling
 def on_message(client, userdata, msg):
     try:
         raw = json.loads(msg.payload.decode())
         print(f"MQTT message received on topic '{msg.topic}': {raw}")
 
-        # if msg.topic == "hub/heartbeat":
-        #     print("📡 Received heartbeat:", raw)
-        #     socketio.emit("hub_stats_update", raw)
-
-        # Extract details
+        # Extract basic alert data
         timestamp = raw.get("timestamp", "")
         alert_type = raw.get("alert_type", "Unknown")
         source = raw.get("source", "Unknown")
@@ -104,21 +103,23 @@ def on_message(client, userdata, msg):
         priority = raw.get("priority", "MEDIUM")
         distances = raw.get("distances", [])
 
+        # Flag handling for camera activation to control dashboard live streaming
         if source.lower() == 'camera_activation':
             activate = raw.get("activate", False)
             socketio.emit('camera_activation', {
                 'activate': activate
             })
-            print(f"📷 Camera activation set to {activate}")
+            print(f"Camera activation set to {activate}")
             return
-    
-        patient_name = random.choice(patient_names)
-        room_no = random.choice(room_numbers)
+
+        # Display logic
+        patient_name = patient_names[0]
+        room_no = room_numbers[0]  
         in_bed = "No" if "out" in alert_type.lower() or "fall" in alert_type.lower() else "Yes"
 
         formatted_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%d %H:%M:%S")
 
-        # Construct final message
+        # Message format for frontend
         message = (
     f"👤 Patient Name        : {patient_name}\n"
     f"📡 Source              : {source.capitalize()}\n"
@@ -134,81 +135,41 @@ def on_message(client, userdata, msg):
 
         message += f"⏰ Timestamp           : {formatted_time}"
 
-        # Emit to dashboard immediately
+        # Emit notification to frontend
         socketio.emit('new_notification', {
             "message": message,
             "priority": priority,
             "timestamp": formatted_time
         })
-        print("✅ Notification emitted to frontend")
+        print("Notification emitted to frontend")
 
     except Exception as e:
         print("MQTT error:", e)
 
+# MQTT binding
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
+# Connect to broker
 try:
     mqtt_client.connect("192.168.61.254", 1883, 60)
     mqtt_client.loop_start()
 except Exception as e:
     print(f"Failed to connect to MQTT broker: {e}")
 
-
+# Flask Routes
 @app.route('/')
 def index():
     return render_template('dashboard.html', 
                            data=dashboard_data,
                            room_number=dashboard_data['room_number'])
 
-@app.route('/dashboard_template')
-def dash_temp():
-    return render_template('dashboard_template.html')
-
-@app.route('/api/status')
-def get_status():
-    return jsonify({
-        'patient_status': dashboard_data['patient_status'],
-        'current_states': dashboard_data['current_states'],
-        'room_number': dashboard_data['room_number']
-    })
-
-@app.route('/api/alerts')
-def get_alerts():
-    priority = request.args.get('priority', 'all').lower()
-    if priority == 'high':
-        alerts = list(dashboard_data['alerts']['high_priority'])
-    elif priority == 'medium':
-        alerts = list(dashboard_data['alerts']['medium_priority'])
-    elif priority == 'low':
-        alerts = list(dashboard_data['alerts']['low_priority'])
-    else:
-        all_alerts = []
-        for queue in ['high_priority', 'medium_priority', 'low_priority']:
-            all_alerts.extend(list(dashboard_data['alerts'][queue]))
-        alerts = sorted(all_alerts, key=lambda x: x['timestamp'], reverse=True)
-    return jsonify(alerts)
-
-@app.route('/api/alerts/acknowledge/<int:alert_index>', methods=['POST'])
-def acknowledge_alert(alert_index):
-    try:
-        priority = request.json.get('priority', 'high').lower()
-        alerts_list = list(dashboard_data['alerts'][f'{priority}_priority'])
-        if 0 <= alert_index < len(alerts_list):
-            alerts_list[alert_index]['acknowledged'] = True
-            dashboard_data['alerts'][f'{priority}_priority'] = deque(alerts_list, 
-                maxlen=dashboard_data['alerts'][f'{priority}_priority'].maxlen)
-            return jsonify({'success': True})
-    except Exception as e:
-        print(f"Error acknowledging alert: {e}")
-    return jsonify({'success': False}), 400
-
-
+# Socket.IO handlers
 @socketio.on('video_frame')
 def handle_video_frame(data):
     global latest_frame
     latest_frame = data
-    print("📷 Received video_frame and broadcasting update_frame")
+    print("Received video_frame and broadcasting update_frame")
     socketio.emit('update_frame', latest_frame)
 
 @socketio.on('request_latest_frame')
@@ -218,16 +179,11 @@ def handle_frame_request():
     else:
         print("No frame available to send")
 
-
 @socketio.on('connect')
 def test_connect():
     print("Client connected")
 
-@app.route('/notifications')
-def notifications():
-    return render_template('notifications.html',
-                           alerts=list(dashboard_data['alerts']['high_priority']))
-
+# Run the app
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
 

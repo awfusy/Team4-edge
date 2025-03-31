@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Patient Monitoring Dashboard</title>
+    <!-- Favicon for browser tab -->
     <link
       rel="icon"
       href="{{ url_for('static', filename='sounds/hospital.png') }}"
       type="image/png"
     />
+    <!-- Inline CSS styling -->
     <style>
       /* Basic Reset */
       * {
@@ -99,7 +101,7 @@
         border-color: #4caf50;
       }
       .status-pending {
-        background-color: #9e9e9e; /* Material Gray 500 */
+        background-color: #9e9e9e; 
         color: white;
       }
 
@@ -120,13 +122,16 @@
   </head>
   <body>
     <div class="dashboard-container">
+      <!-- Left Panel: Main Monitor -->
       <div class="panel">
         <h1>Room {{ data.room_number }} - Patient Monitoring</h1>
 
+        <!-- Dynamic Patient Status -->
         <div id="patient-status" class="status-indicator status-pending">
           Patient Status: <span id="status-text">Pending</span>
         </div>
 
+        <!-- Video feed placeholder and stream -->
         <div class="video-feed">
           <h3>Live Video Feed:</h3>
           <div style="position: relative; height: 660px">
@@ -142,6 +147,7 @@
                 display: none;
               "
             />
+            <!-- Fallback when camera is off -->
             <div
               id="stream-placeholder"
               style="
@@ -165,9 +171,8 @@
           </div>
         </div>
       </div>
-      <!-- ✅ Closes the left panel -->
 
-      <!-- ✅ Right-side Notifications Panel -->
+      <!-- Right Panel: Recent Alerts -->
       <div class="panel">
         <h2>Recent Alerts</h2>
         <div class="alert-list">
@@ -179,25 +184,11 @@
           </div>
           {% endfor %}
         </div>
-        <!-- <h2>Hub Statistics</h2> -->
-        <!-- <div class="state-box" id="hub-stats">
-          <p><strong>CPU Usage:</strong> <span id="cpu-usage">--</span>%</p>
-          <p>
-            <strong>Memory Usage:</strong> <span id="memory-usage">--</span>%
-          </p>
-          <p>
-            <strong>Available Memory:</strong>
-            <span id="available-memory">--</span> MB
-          </p>
-          <p><strong>Status:</strong> <span id="hub-status">--</span></p>
-          <p>
-            <strong>Last Update:</strong> <span id="hub-timestamp">--</span>
-          </p>
-        </div> -->
       </div>
     </div>
-    <!-- ✅ Closes the dashboard-container -->
+    <!-- Closes the dashboard-container -->
 
+    <!-- WebSocket via Socket.IO -->
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
       const socket = io();
@@ -208,13 +199,14 @@
       let streamTimeout;
       let streamActive = false;
 
+      // Hide stream by default
       window.addEventListener("DOMContentLoaded", () => {
         stream.style.display = "none";
         placeholder.style.display = "flex";
 
+        
         const statusElement = document.getElementById("patient-status");
         const statusText = document.getElementById("status-text");
-
         const currentStatus = statusText.textContent.trim();
 
         const knownStatuses = [
@@ -224,6 +216,7 @@
           "Pending",
         ];
 
+        // Reset to pending
         if (!streamActive) {
           statusElement.classList.remove(
             "status-emergency",
@@ -236,14 +229,15 @@
         }
       });
 
-      // Function to stop stream and show placeholder
+      // Stop video feed and show placeholder
       function stopStream() {
         stream.style.display = "none";
-        placeholder.style.display = "flex"; // Must match the CSS flex display
+        placeholder.style.display = "flex";
         streamActive = false;
         streamStartTime = null;
       }
 
+      // Stream control via MQTT trigger
       let streamingEnabled = false;
 
       socket.on("camera_activation", function (data) {
@@ -252,22 +246,18 @@
 
         if (!streamingEnabled) {
           stopStream();
-          console.log("🛑 Live stream disabled via MQTT");
+          console.log("Live stream disabled via MQTT");
         } else {
-          //streamingEnabled = true;
-          //socket.emit("request_latest_frame");
-          console.log("streamActive", streamActive);
-          console.log("🎥 Live stream enabled via MQTT");
+          console.log("Live stream enabled via MQTT");
         }
       });
 
+      // Receiving video frames
       socket.on("update_frame", function (data) {
-        console.log("⚠️ Received frame");
+        console.log("Received frame");
         console.log("streamingEnabled:", streamingEnabled);
         console.log("streamActive:", streamActive);
-
         console.log("Received update_frame with data length:", data.length);
-        //if (!streamingEnabled) return;
 
         stream.src = "data:image/jpeg;base64," + data;
         console.log("streamActive", streamActive);
@@ -285,6 +275,7 @@
         console.log("🔌 WebSocket disconnected");
       });
 
+      // Handle incoming alert notification
       socket.on("new_notification", function (data) {
         const alertBox = document.createElement("div");
         alertBox.classList.add("alert");
@@ -309,6 +300,7 @@
           sound.currentTime = 0; // rewind to start
         });
 
+        // Update alert styling and play audio
         if (priority === "HIGH") {
           alertBox.classList.add("alert-high");
           document.getElementById("high-sound").play();
@@ -328,38 +320,16 @@
           statusText.textContent = "Normal";
         }
 
+        // Render alert message
         alertBox.innerHTML = `
   <pre style="white-space: pre-wrap;">${data.message}</pre>
 `;
 
-
         document.querySelector(".alert-list").prepend(alertBox);
       });
-
-      // socket.on("hub_stats_update", function (data) {
-      //   console.log("📡 Hub Stats Received:", data);
-
-      //   document.getElementById("cpu-usage").textContent = data.cpu || "--";
-      //   document.getElementById("memory-usage").textContent =
-      //     data.memory || "--";
-      //   document.getElementById("available-memory").textContent =
-      //     data.available_memory || "--";
-      //   document.getElementById("hub-status").textContent = data.status || "--";
-      //   document.getElementById("hub-timestamp").textContent =
-      //     data.timestamp || "--";
-
-      //   // Optional: you can add color based on status
-      //   const hubBox = document.getElementById("hub-stats");
-      //   hubBox.style.borderLeft =
-      //     "4px solid " +
-      //     (data.status === "alive"
-      //       ? "#4caf50"
-      //       : data.status === "warning"
-      //       ? "#ff9800"
-      //       : "#f44336");
-      // });
     </script>
-    <!-- Audio Alerts -->
+    
+    <!-- Embedded Audio for Priority-Based Alerts -->
     <audio
       id="high-sound"
       src="{{ url_for('static', filename='sounds/high_priority.wav') }}"
