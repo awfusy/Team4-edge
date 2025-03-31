@@ -74,8 +74,8 @@ def send_mqtt_alert(class_id, confidence, detected_phrase=""):
         result = client.publish(MQTT_TOPIC, json.dumps(alert_data), qos=2)
         result.wait_for_publish()
         if result.is_published():
-            print(f"✓ MQTT Alert successfully published")
-            print(f"  Details: {alert_data}")
+            print(f"MQTT Alert successfully published")
+            print(f"Details: {alert_data}")
             last_mqtt_time = time.time()
             return True
         else:
