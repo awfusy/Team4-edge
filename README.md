@@ -1,4 +1,4 @@
-# Team4-edge
+# AI Enabled Smart Patient Assistance System with Multi-Sensor Monitoring for Enhanced Patient Care and Emergency Response
 
 🧠 AI-Enabled Smart Patient Assistance System
 A real-time, event-driven IoT healthcare monitoring system powered by edge computing. This system leverages voice detection, pose estimation, and proximity sensing to detect patient emergencies such as falls, calls for help, or leaving the bed — without requiring physical call buttons.
