@@ -12,7 +12,7 @@ A real-time, event-driven IoT healthcare monitoring system powered by edge compu
 ✅ 3x Ultrasonic sensors (for bed proximity sensing)
 ✅ Internet connection (for MQTT communication)
 
-🛠️ Project Setup
+# Project Setup
 
 🔹 1. Prepare Each Raspberry Pi
 Assign roles to each Pi:
@@ -22,28 +22,28 @@ Assign roles to each Pi:
   - Central Hub Pi → optimised_hub_final.py
 
 🔹 2. Set Up Python Environment on Each Pi
-# Step into your working directory
+
+Step into your working directory
 cd ~/your_project_folder/
 
-# Create a virtual environment
+Create a virtual environment
 python3 -m venv myenv
 
-# Activate the environment
+Activate the environment
 source myenv/bin/activate
 
-# Install dependencies
+Install dependencies
 pip install -r requirements.txt -r video_requirements.txt
 Repeat on each Pi according to its role.
 
 🔹 3. Transfer the Relevant Scripts to Each Pi
 Use scp or USB to transfer the appropriate Python files:
 
-Raspberry Pi	Files to Transfer
-Audio Pi → wake_word.py, file_conversion.py, audio_processing.py, audio_model.py
-Camera Pi → falldetection4.py
-Ultrasonic Pi → Ultrasonic_final.py
-Central Hub	→ optimised_hub_final.py
-Flask App	→ edge_flask/app.py, templates, static files
+  - Audio Pi → wake_word.py, file_conversion.py, audio_processing.py, audio_model.py
+  - Camera Pi → falldetection4.py
+  - Ultrasonic Pi → Ultrasonic_final.py
+  - Central Hub	→ optimised_hub_final.py
+  - Flask App	→ edge_flask/app.py, templates, static files
 
 🔹 4. Enable MQTT Broker on the Central Hub Pi
 
@@ -91,13 +91,14 @@ Audio Pi → Detects wake words like "Help" → Sends alert → Triggers camera 
 Camera Pi → Analyzes posture → Detects falls → Sends real-time video and MQTT alert.
 Flask Dashboard → Displays alert messages, plays sound, and streams live video.
 
-🧠 Technologies Used
-Python 3.x
-Flask + Flask-SocketIO
-OpenCV + MediaPipe
-Vosk + TensorFlow Lite
-MQTT (Mosquitto Broker)
-Socket.IO for real-time communication
+# Technologies Used
+- Python 3.x
+- Flask + Flask-SocketIO
+- OpenCV + MediaPipe
+- Vosk + TensorFlow Lite
+- MQTT (Mosquitto Broker)
+- Socket.IO for real-time communication
 
-System Architecture
+# Project Architecture
+
 ![Project System Architecture_Team4](https://github.com/user-attachments/assets/100f32bd-a4f0-44ba-8791-9e0be5d60df2)
